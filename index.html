@@ -6,18 +6,21 @@
     <title>Matematika Kuis</title>
     <style>
         :root {
-            --primary: #4a6bff;
-            --secondary: #f5f7ff;
-            --accent: #ff6b6b;
-            --text: #333;
-            --light-text: #666;
-            --background: #fff;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --border-radius: 8px;
-            --dark-bg: #1a1a2e;
-            --dark-text: #f0f0f0;
-            --dark-secondary: #16213e;
-        }
+    --primary: #4a6bff;
+    --secondary: #f5f7ff;
+    --accent: #ff6b6b;
+    --text: #333;
+    --light-text: #666;
+    --background: #fff;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+    --dark-bg: #1a1a2e;
+    --dark-secondary: #16213e;
+    --dark-text: #f5f7ff; /* <-- BARIS INI DITAMBAHKAN */
+    --success: #6bce70;
+    --warning: #f0ad4e;
+    --danger: #d9534f;
+}
 
         * {
             margin: 0;
@@ -823,26 +826,10 @@
             border-radius: var(--border-radius);
             margin-top: 20px;
             font-style: italic;
-        }
-
-        .dark-mode .fun-fact {
-            background-color: #1a1a2e;
-        }
-
-        .streak-fire {
-            color: #ff9500;
-            animation: pulse 1.5s infinite;
-        }
-
-        .fun-fact {
-            background-color: var(--secondary);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            margin-top: 20px;
-            font-style: italic;
             position: relative;
             overflow: hidden;
-            min-height: 60px; /* Sesuaikan tinggi minimum */
+            min-height: 60px;
+            transition: all 0.3s ease;
         }
 
         .dark-mode .fun-fact {
@@ -865,31 +852,141 @@
             color: var(--primary);
         }
 
-        /* Tambahkan ini di CSS */
-.fun-fact::before {
-    content: "💡";
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    opacity: 0.2;
-    font-size: 2rem;
-    z-index: 0;
-}
+        .fun-fact::before {
+            content: "💡";
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            opacity: 0.2;
+            font-size: 2rem;
+            z-index: 0;
+        }
 
-.fun-fact:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
+        .fun-fact:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
 
-.dark-mode .fun-fact:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
+        .dark-mode .fun-fact:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .streak-fire {
+            color: #ff9500;
+            animation: pulse 1.5s infinite;
+        }
 
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
+        }
+
+        /* New Features Styles */
+        .achievement-popup {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        .game-mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .game-mode-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .game-mode-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .game-mode-btn.active {
+            background-color: var(--primary);
+        }
+
+        .explanation-panel {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .dark-mode .explanation-panel {
+            background-color: #1a1a2e;
+        }
+
+        .explanation-title {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .coin-display {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.1rem;
+            margin-left: 15px;
+        }
+
+        .coin-icon {
+            color: #ffd700;
+        }
+
+        .skill-progress {
+            width: 100%;
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .dark-mode .skill-progress {
+            background-color: #444;
+        }
+
+        .skill-progress-bar {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .skill-item {
+            margin-bottom: 15px;
+        }
+
+        .skill-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
         }
 
         @media (max-width: 768px) {
@@ -937,6 +1034,11 @@
             .daily-challenge-btn {
                 bottom: 120px;
             }
+
+            .achievement-popup {
+                width: calc(100% - 40px);
+                left: 20px;
+            }
         }
     </style>
 </head>
@@ -967,6 +1069,11 @@
             </div>
         </div>
 
+        <div class="game-mode-selector" id="gameModeSelector">
+            <button class="game-mode-btn active" data-mode="normal">Mode Normal</button>
+            <button class="game-mode-btn" data-mode="speedrun">Speed Run</button>
+        </div>
+
         <div class="difficulty-selector">
             <button class="difficulty-btn easy" data-difficulty="easy">Mudah</button>
             <button class="difficulty-btn medium" data-difficulty="medium">Menengah</button>
@@ -982,6 +1089,10 @@
                     <div class="streak-container">
                         <span class="streak-fire">🔥</span>
                         <span class="streak-count" id="streakCount">0</span>
+                    </div>
+                    <div class="coin-display">
+                        <span class="coin-icon">🪙</span>
+                        <span id="coinCount">0</span>
                     </div>
                 </div>
                 <div class="score-container">
@@ -1000,7 +1111,12 @@
                 <input type="text" class="answer-field" id="answerInput" placeholder="Masukkan jawaban Anda...">
                 
                 <div class="answer-options" id="answerOptions">
-                    </div>
+                </div>
+
+                <div class="explanation-panel" id="explanationPanel">
+                    <div class="explanation-title">Pembahasan:</div>
+                    <div id="explanationText"></div>
+                </div>
             </div>
 
             <div class="quiz-controls">
@@ -1043,14 +1159,55 @@
                     <div class="stat-label">Level Tertinggi</div>
                     <div class="stat-value" id="highestLevel">0</div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Koin</div>
+                    <div class="stat-value" id="totalCoins">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Achievement</div>
+                    <div class="stat-value" id="achievementCount">0/8</div>
+                </div>
             </div>
+
+            <div class="skill-item">
+                <div class="skill-label">
+                    <span>Aljabar</span>
+                    <span id="algebraPercent">0%</span>
+                </div>
+                <div class="skill-progress">
+                    <div class="skill-progress-bar" id="algebraProgress"></div>
+                </div>
+            </div>
+
+            <div class="skill-item">
+                <div class="skill-label">
+                    <span>Geometri</span>
+                    <span id="geometryPercent">0%</span>
+                </div>
+                <div class="skill-progress">
+                    <div class="skill-progress-bar" id="geometryProgress"></div>
+                </div>
+            </div>
+
+            <div class="skill-item">
+                <div class="skill-label">
+                    <span>Aritmatika</span>
+                    <span id="arithmeticPercent">0%</span>
+                </div>
+                <div class="skill-progress">
+                    <div class="skill-progress-bar" id="arithmeticProgress"></div>
+                </div>
+            </div>
+
             <button class="share-btn" id="shareBtn">
                 <span>📤</span> Bagikan Hasil
             </button>
         </div>
 
         <div class="fun-fact" id="funFact">
-            <strong>Fakta Menarik:</strong> Tahukah Anda bahwa angka 0.999... (angka 9 berulang tak terbatas) sebenarnya sama dengan 1?
+            <div class="fun-fact-content">
+                <strong>Fakta Menarik:</strong> Tahukah Anda bahwa angka 0.999... (angka 9 berulang tak terbatas) sebenarnya sama dengan 1?
+            </div>
         </div>
     </div>
 
@@ -1090,11 +1247,11 @@
                         <th>Nama</th>
                         <th>Skor</th>
                         <th>Level</th>
+                        <th>Koin</th>
                     </tr>
                 </thead>
                 <tbody id="leaderboardBody">
-                    <!-- Leaderboard data will be inserted here -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
@@ -1117,7 +1274,6 @@
         </div>
     </div>
 
-    <!-- Floating action buttons -->
     <button class="theme-toggle" id="themeToggle">🌓</button>
     <button class="leaderboard-btn" id="leaderboardBtn">🏆</button>
     <button class="daily-challenge-btn" id="dailyChallengeBtn">📅</button>
@@ -1142,116 +1298,138 @@
         let dailyChallengeProgress = 0;
         let dailyChallengeCompleted = false;
         let darkMode = false;
+        let gameMode = 'normal';
+        let coins = 0;
+        let totalQuestionsAnswered = 0;
+        let algebraCorrect = 0;
+        let geometryCorrect = 0;
+        let arithmeticCorrect = 0;
+        let speedRunTime = 0;
+        let speedRunInterval;
+        let factInterval;
+        let usedQuestions = new Set(); // <-- MODIFICATION: Added to track used questions
 
-        // Data leaderboard dummy (bisa diganti dengan data dari localStorage atau backend)
+        // Data achievement
+        const achievements = [
+            { id: 1, name: "Pemula", desc: "Selesaikan level 5", earned: false, reward: 10 },
+            { id: 2, name: "Ahli Hitung", desc: "Jawab 10 soal benar berturut-turut", earned: false, reward: 20 },
+            { id: 3, name: "Master Aljabar", desc: "Jawab 5 soal aljabar dengan benar", earned: false, reward: 15 },
+            { id: 4, name: "Speed Runner", desc: "Selesaikan level dalam waktu <30 detik", earned: false, reward: 25 },
+            { id: 5, name: "Penjelajah", desc: "Coba semua tingkat kesulitan", earned: false, reward: 30 },
+            { id: 6, name: "Kolektor Koin", desc: "Kumpulkan 100 koin", earned: false, reward: 50 },
+            { id: 7, name: "Tak Terhentikan", desc: "Selesaikan 20 level", earned: false, reward: 40 },
+            { id: 8, name: "Tanpa Bantuan", desc: "Selesaikan level tanpa menggunakan hint", earned: false, reward: 20 }
+        ];
+
+        // Data leaderboard dummy
         let leaderboardData = [
-            { name: "Anda", score: 0, level: 0 },
-            { name: "Matematikus", score: 450, level: 20 },
-            { name: "Pecinta Angka", score: 380, level: 18 },
-            { name: "Ahli Aljabar", score: 320, level: 16 },
-            { name: "Raja Geometri", score: 290, level: 15 }
+            { name: "Anda", score: 0, level: 0, coins: 0 },
+            { name: "Matematikus", score: 450, level: 20, coins: 120 },
+            { name: "Pecinta Angka", score: 380, level: 18, coins: 95 },
+            { name: "Ahli Aljabar", score: 320, level: 16, coins: 80 },
+            { name: "Raja Geometri", score: 290, level: 15, coins: 75 }
         ];
 
         // Fakta matematika acak
         const mathFacts = [
-            // --- Fakta Angka & Teori Bilangan ---
-            "Konstanta Kaprekar: Pilih angka 4 digit dengan setidaknya dua digit berbeda, urutkan menurun dan menaik, kurangi hasilnya. Ulangi prosesnya, dan Anda akan selalu berakhir di angka 6174.",
-            "Bilangan Vampir adalah bilangan yang 'dapat dihidupkan kembali' oleh dua 'taring' (faktor) yang diambil dari digitnya sendiri. Contoh: 2187 = 27 × 81.",
-            "Dalam sekelompok 23 orang, peluang dua orang memiliki tanggal ulang tahun yang sama lebih dari 50%. Ini dikenal sebagai Paradoks Ulang Tahun.",
-            "Angka 7 adalah angka yang paling mungkin muncul saat Anda melempar dua dadu (peluang 1/6).",
-            "Hukum Benford menyatakan bahwa dalam banyak kumpulan data di dunia nyata, angka 1 cenderung muncul sebagai digit pertama sekitar 30% dari waktu.",
-            "Bilangan Armstrong (atau Narsisistik) adalah bilangan yang sama dengan jumlah digit-digitnya yang dipangkatkan dengan jumlah digit. Contoh: 153 = 1³ + 5³ + 3³.",
-            "Tidak ada satu pun bilangan prima yang berakhiran 5, kecuali angka 5 itu sendiri.",
-            "Jumlah dari semua bilangan dari 1 hingga 100 (yaitu 1+2+...+100) adalah 5050.",
-            "Teorema Terakhir Fermat, yang menyatakan tidak ada bilangan bulat positif a, b, dan c yang dapat memenuhi persamaan aⁿ + bⁿ = cⁿ untuk n > 2, baru terbukti setelah 358 tahun.",
-            "Persamaan Euler, e^(iπ) + 1 = 0, dianggap sebagai salah satu persamaan terindah karena menghubungkan lima konstanta matematika paling fundamental.",
-            "Ada 'bilangan aneh' (weird numbers), yaitu bilangan yang berlimpah tetapi tidak semi-sempurna. Angka 70 adalah yang terkecil.",
-            "Setiap bilangan bulat ganjil dapat ditulis sebagai selisih dari dua bilangan kuadrat sempurna.",
-            "Bilangan 'sociable' adalah generalisasi dari bilangan akrab dan sempurna, di mana jumlah pembaginya membentuk siklus. Siklus terpanjang yang diketahui memiliki 28 anggota.",
-            "Jumlah dari kebalikan semua bilangan kuadrat (1/1² + 1/2² + 1/3² + ...) secara mengejutkan konvergen ke π²/6.",
-            "Meskipun ada tak terhingga bilangan prima, 'celah' di antara mereka bisa menjadi sangat besar secara acak.",
-            "Angka 'googolplex' adalah 10 pangkat googol (10^10^100), sebuah angka yang begitu besar sehingga tidak mungkin untuk menuliskannya di alam semesta yang teramati.",
-            "Bilangan Palindromik adalah bilangan yang dibaca sama dari depan maupun belakang, seperti 12321.",
-            "Nol (0) adalah satu-satunya bilangan yang memiliki sifat aditif (x+0=x) dan multiplikatif (x*0=0).",
-            "Angka 13 dianggap sial di banyak budaya (triskaidekaphobia) sebagian karena ada 13 orang pada Perjamuan Terakhir.",
-            "Sistem bilangan Babilionia Kuno menggunakan basis 60, yang merupakan alasan kita memiliki 60 detik dalam satu menit dan 360 derajat dalam satu lingkaran.",
+    // --- Fakta Angka & Teori Bilangan ---
+    "Konstanta Kaprekar: Pilih angka 4 digit dengan setidaknya dua digit berbeda, urutkan menurun dan menaik, kurangi hasilnya. Ulangi prosesnya, dan Anda akan selalu berakhir di angka 6174.",
+    "Bilangan Vampir adalah bilangan yang 'dapat dihidupkan kembali' oleh dua 'taring' (faktor) yang diambil dari digitnya sendiri. Contoh: 2187 = 27 × 81.",
+    "Dalam sekelompok 23 orang, peluang dua orang memiliki tanggal ulang tahun yang sama lebih dari 50%. Ini dikenal sebagai Paradoks Ulang Tahun.",
+    "Angka 7 adalah angka yang paling mungkin muncul saat Anda melempar dua dadu (peluang 1/6).",
+    "Hukum Benford menyatakan bahwa dalam banyak kumpulan data di dunia nyata, angka 1 cenderung muncul sebagai digit pertama sekitar 30% dari waktu.",
+    "Bilangan Armstrong (atau Narsisistik) adalah bilangan yang sama dengan jumlah digit-digitnya yang dipangkatkan dengan jumlah digit. Contoh: 153 = 1³ + 5³ + 3³.",
+    "Tidak ada satu pun bilangan prima yang berakhiran 5, kecuali angka 5 itu sendiri.",
+    "Jumlah dari semua bilangan dari 1 hingga 100 (yaitu 1+2+...+100) adalah 5050.",
+    "Teorema Terakhir Fermat, yang menyatakan tidak ada bilangan bulat positif a, b, dan c yang dapat memenuhi persamaan aⁿ + bⁿ = cⁿ untuk n > 2, baru terbukti setelah 358 tahun.",
+    "Persamaan Euler, e^(iπ) + 1 = 0, dianggap sebagai salah satu persamaan terindah karena menghubungkan lima konstanta matematika paling fundamental.",
+    "Ada 'bilangan aneh' (weird numbers), yaitu bilangan yang berlimpah tetapi tidak semi-sempurna. Angka 70 adalah yang terkecil.",
+    "Setiap bilangan bulat ganjil dapat ditulis sebagai selisih dari dua bilangan kuadrat sempurna.",
+    "Bilangan 'sociable' adalah generalisasi dari bilangan akrab dan sempurna, di mana jumlah pembaginya membentuk siklus. Siklus terpanjang yang diketahui memiliki 28 anggota.",
+    "Jumlah dari kebalikan semua bilangan kuadrat (1/1² + 1/2² + 1/3² + ...) secara mengejutkan konvergen ke π²/6.",
+    "Meskipun ada tak terhingga bilangan prima, 'celah' di antara mereka bisa menjadi sangat besar secara acak.",
+    "Angka 'googolplex' adalah 10 pangkat googol (10^10^100), sebuah angka yang begitu besar sehingga tidak mungkin untuk menuliskannya di alam semesta yang teramati.",
+    "Bilangan Palindromik adalah bilangan yang dibaca sama dari depan maupun belakang, seperti 12321.",
+    "Nol (0) adalah satu-satunya bilangan yang memiliki sifat aditif (x+0=x) dan multiplikatif (x*0=0).",
+    "Angka 13 dianggap sial di banyak budaya (triskaidekaphobia) sebagian karena ada 13 orang pada Perjamuan Terakhir.",
+    "Sistem bilangan Babilionia Kuno menggunakan basis 60, yang merupakan alasan kita memiliki 60 detik dalam satu menit dan 360 derajat dalam satu lingkaran.",
 
-            // --- Fakta Geometri & Topologi ---
-            "Bentuk penutup lubang got (manhole) biasanya bulat karena itu adalah satu-satunya bentuk yang tidak bisa jatuh ke dalam lubang itu sendiri dari sudut mana pun.",
-            "Sebuah Pita Möbius adalah permukaan dengan hanya satu sisi dan satu tepi. Jika Anda berjalan di sepanjang permukaannya, Anda akan kembali ke titik awal di sisi yang 'berlawanan'.",
-            "Teorema Empat Warna menyatakan bahwa Anda hanya memerlukan empat warna untuk mewarnai peta apa pun sehingga tidak ada dua wilayah yang berdekatan memiliki warna yang sama.",
-            "Masalah Jembatan Königsberg adalah teka-teki terkenal yang melahirkan bidang matematika baru yang disebut Teori Graf.",
-            "Fraktal adalah pola tak berujung yang kompleks dan berulang pada skala yang berbeda. Contohnya termasuk kepingan salju dan pakis.",
-            "Botol Klein adalah objek 4-dimensi yang tidak memiliki 'dalam' atau 'luar' yang dapat dibedakan.",
-            "Dalam geometri non-Euklides, jumlah sudut dalam sebuah segitiga bisa lebih atau kurang dari 180 derajat.",
-            "Turunan dari rumus volume bola (4/3πr³) terhadap jari-jarinya (r) adalah rumus luas permukaannya (4πr²).",
-            "Ada lebih banyak persimpangan dalam simpul tali sepatu Anda daripada yang Anda kira; studi tentang ini disebut Teori Simpul.",
-            "Anda tidak dapat menyisir rambut di bola berbulu tanpa menciptakan setidaknya satu 'pusaran' (cowlick). Ini adalah ilustrasi dari Teorema Bola Berbulu.",
-            "Bentuk heksagon adalah cara paling efisien untuk mengisi bidang datar dengan bentuk yang sama, itulah sebabnya sarang lebah berbentuk heksagon.",
-            "Golden Ratio (sekitar 1.618) sering muncul di alam, seni, dan arsitektur, dari Parthenon hingga cangkang nautilus.",
-            "Sebuah 'tesseract' adalah analogi empat dimensi dari sebuah kubus.",
-            "Geometri fraktal digunakan untuk membuat grafis komputer yang realistis untuk pemandangan alam seperti pegunungan dan pantai.",
-            "Lingkaran memiliki rasio keliling terhadap diameter yang konstan (π), tetapi bentuk lain tidak.",
-            "Luas segitiga dengan simpul pada koordinat bilangan bulat selalu merupakan kelipatan dari 1/2.",
-            "Objek dengan dimensi fraktal dapat memiliki panjang tak terhingga dalam area yang terbatas.",
-            "Pola Voronoi, yang membagi ruang menjadi wilayah berdasarkan kedekatan titik, ditemukan pada kulit jerapah dan sayap capung.",
-            "Proyeksi stereografis memungkinkan pemetaan permukaan bola ke bidang datar, yang penting dalam kartografi dan matematika kompleks.",
-            "Topologi sering disebut 'geometri lembaran karet' karena mempelajari sifat-sifat bentuk yang tidak berubah di bawah peregangan atau pembengkokan.",
+    // --- Fakta Geometri & Topologi ---
+    "Bentuk penutup lubang got (manhole) biasanya bulat karena itu adalah satu-satunya bentuk yang tidak bisa jatuh ke dalam lubang itu sendiri dari sudut mana pun.",
+    "Sebuah Pita Möbius adalah permukaan dengan hanya satu sisi dan satu tepi. Jika Anda berjalan di sepanjang permukaannya, Anda akan kembali ke titik awal di sisi yang 'berlawanan'.",
+    "Teorema Empat Warna menyatakan bahwa Anda hanya memerlukan empat warna untuk mewarnai peta apa pun sehingga tidak ada dua wilayah yang berdekatan memiliki warna yang sama.",
+    "Masalah Jembatan Königsberg adalah teka-teki terkenal yang melahirkan bidang matematika baru yang disebut Teori Graf.",
+    "Fraktal adalah pola tak berujung yang kompleks dan berulang pada skala yang berbeda. Contohnya termasuk kepingan salju dan pakis.",
+    "Botol Klein adalah objek 4-dimensi yang tidak memiliki 'dalam' atau 'luar' yang dapat dibedakan.",
+    "Dalam geometri non-Euklides, jumlah sudut dalam sebuah segitiga bisa lebih atau kurang dari 180 derajat.",
+    "Turunan dari rumus volume bola (4/3πr³) terhadap jari-jarinya (r) adalah rumus luas permukaannya (4πr²).",
+    "Ada lebih banyak persimpangan dalam simpul tali sepatu Anda daripada yang Anda kira; studi tentang ini disebut Teori Simpul.",
+    "Anda tidak dapat menyisir rambut di bola berbulu tanpa menciptakan setidaknya satu 'pusaran' (cowlick). Ini adalah ilustrasi dari Teorema Bola Berbulu.",
+    "Bentuk heksagon adalah cara paling efisien untuk mengisi bidang datar dengan bentuk yang sama, itulah sebabnya sarang lebah berbentuk heksagon.",
+    "Golden Ratio (sekitar 1.618) sering muncul di alam, seni, dan arsitektur, dari Parthenon hingga cangkang nautilus.",
+    "Sebuah 'tesseract' adalah analogi empat dimensi dari sebuah kubus.",
+    "Geometri fraktal digunakan untuk membuat grafis komputer yang realistis untuk pemandangan alam seperti pegunungan dan pantai.",
+    "Lingkaran memiliki rasio keliling terhadap diameter yang konstan (π), tetapi bentuk lain tidak.",
+    "Luas segitiga dengan simpul pada koordinat bilangan bulat selalu merupakan kelipatan dari 1/2.",
+    "Objek dengan dimensi fraktal dapat memiliki panjang tak terhingga dalam area yang terbatas.",
+    "Pola Voronoi, yang membagi ruang menjadi wilayah berdasarkan kedekatan titik, ditemukan pada kulit jerapah dan sayap capung.",
+    "Proyeksi stereografis memungkinkan pemetaan permukaan bola ke bidang datar, yang penting dalam kartografi dan matematika kompleks.",
+    "Topologi sering disebut 'geometri lembaran karet' karena mempelajari sifat-sifat bentuk yang tidak berubah di bawah peregangan atau pembengkokan.",
 
-            // --- Fakta Probabilitas & Logika ---
-            "Paradoks Monty Hall menunjukkan bahwa pilihan intuitif dalam probabilitas seringkali salah. Peluang menang meningkat jika Anda mengubah pilihan Anda.",
-            "Teorema Monyet Tak Terhingga menyatakan bahwa monyet yang mengetik secara acak di mesin tik untuk waktu tak terbatas pada akhirnya hampir pasti akan menghasilkan karya lengkap William Shakespeare.",
-            "Paradoks Banach-Tarski secara kontroversial menyatakan bahwa sebuah bola dapat dipecah menjadi sejumlah bagian terbatas dan disusun kembali menjadi dua bola yang identik dengan aslinya.",
-            "Teorema Ketidaklengkapan Gödel menunjukkan bahwa dalam sistem matematika formal apa pun, akan selalu ada pernyataan yang benar tetapi tidak dapat dibuktikan dalam sistem itu sendiri.",
-            "Hukum Bilangan Besar yang Sesungguhnya menyatakan bahwa dengan ukuran sampel yang cukup besar, hal-hal yang paling aneh dan tidak mungkin pun bisa terjadi.",
-            "Dalam permainan 'Rock, Paper, Scissors', strategi terbaik secara matematis adalah bermain secara acak.",
-            "Peluang Anda memenangkan lotre utama seringkali lebih rendah daripada peluang Anda tersambar petir dalam hidup Anda.",
-            "Sebuah setumpuk 52 kartu memiliki 52! (52 faktorial) kemungkinan urutan, sebuah angka yang lebih besar dari jumlah atom di Bumi.",
-            "Rantai Markov adalah model matematika yang menggambarkan urutan peristiwa di mana probabilitas setiap peristiwa hanya bergantung pada keadaan peristiwa sebelumnya.",
-            "Paradoks Simpson terjadi ketika sebuah tren muncul dalam beberapa kelompok data yang berbeda tetapi menghilang atau berbalik ketika kelompok-kelompok ini digabungkan.",
-            "Jika Anda mengocok setumpuk kartu dengan benar, kemungkinan besar urutan kartu yang Anda dapatkan belum pernah ada sebelumnya dalam sejarah dunia.",
-            "Peluang dua orang di kelas dengan 30 siswa tidak memiliki hari ulang tahun yang sama sangatlah kecil, hanya sekitar 29%.",
-            "Sebuah 'langkah acak' (random walk) adalah jalur yang terdiri dari serangkaian langkah acak, sebuah konsep kunci dalam fisika dan pasar saham.",
-            "Masalah Penjatahan Sekretaris adalah teka-teki probabilitas untuk menemukan strategi optimal untuk memilih kandidat terbaik dari sekelompok pelamar.",
-            "Meskipun kelihatannya berlawanan dengan intuisi, rata-rata jumlah teman dari teman Anda hampir selalu lebih besar dari jumlah teman Anda sendiri (Paradoks Persahabatan).",
+    // --- Fakta Probabilitas & Logika ---
+    "Paradoks Monty Hall menunjukkan bahwa pilihan intuitif dalam probabilitas seringkali salah. Peluang menang meningkat jika Anda mengubah pilihan Anda.",
+    "Teorema Monyet Tak Terhingga menyatakan bahwa monyet yang mengetik secara acak di mesin tik untuk waktu tak terbatas pada akhirnya hampir pasti akan menghasilkan karya lengkap William Shakespeare.",
+    "Paradoks Banach-Tarski secara kontroversial menyatakan bahwa sebuah bola dapat dipecah menjadi sejumlah bagian terbatas dan disusun kembali menjadi dua bola yang identik dengan aslinya.",
+    "Teorema Ketidaklengkapan Gödel menunjukkan bahwa dalam sistem matematika formal apa pun, akan selalu ada pernyataan yang benar tetapi tidak dapat dibuktikan dalam sistem itu sendiri.",
+    "Hukum Bilangan Besar yang Sesungguhnya menyatakan bahwa dengan ukuran sampel yang cukup besar, hal-hal yang paling aneh dan tidak mungkin pun bisa terjadi.",
+    "Dalam permainan 'Rock, Paper, Scissors', strategi terbaik secara matematis adalah bermain secara acak.",
+    "Peluang Anda memenangkan lotre utama seringkali lebih rendah daripada peluang Anda tersambar petir dalam hidup Anda.",
+    "Sebuah setumpuk 52 kartu memiliki 52! (52 faktorial) kemungkinan urutan, sebuah angka yang lebih besar dari jumlah atom di Bumi.",
+    "Rantai Markov adalah model matematika yang menggambarkan urutan peristiwa di mana probabilitas setiap peristiwa hanya bergantung pada keadaan peristiwa sebelumnya.",
+    "Paradoks Simpson terjadi ketika sebuah tren muncul dalam beberapa kelompok data yang berbeda tetapi menghilang atau berbalik ketika kelompok-kelompok ini digabungkan.",
+    "Jika Anda mengocok setumpuk kartu dengan benar, kemungkinan besar urutan kartu yang Anda dapatkan belum pernah ada sebelumnya dalam sejarah dunia.",
+    "Peluang dua orang di kelas dengan 30 siswa tidak memiliki hari ulang tahun yang sama sangatlah kecil, hanya sekitar 29%.",
+    "Sebuah 'langkah acak' (random walk) adalah jalur yang terdiri dari serangkaian langkah acak, sebuah konsep kunci dalam fisika dan pasar saham.",
+    "Masalah Penjatahan Sekretaris adalah teka-teki probabilitas untuk menemukan strategi optimal untuk memilih kandidat terbaik dari sekelompok pelamar.",
+    "Meskipun kelihatannya berlawanan dengan intuisi, rata-rata jumlah teman dari teman Anda hampir selalu lebih besar dari jumlah teman Anda sendiri (Paradoks Persahabatan).",
 
-            // --- Fakta Sejarah & Lain-lain ---
-            "Tanda sama dengan (=) diciptakan oleh matematikawan Robert Recorde pada tahun 1557 karena ia 'bosan menulis 'is equal to' berulang kali'.",
-            "Kata 'aljabar' berasal dari bahasa Arab 'al-jabr', yang berarti 'penyatuan kembali bagian-bagian yang rusak', dari judul buku matematikawan Persia, Al-Khwarizmi.",
-            "Kata 'algoritma' adalah latinisasi dari nama Al-Khwarizmi.",
-            "Sophie Germain adalah seorang matematikawan wanita yang menggunakan nama samaran pria, 'Monsieur Le Blanc', untuk dapat berpartisipasi dalam komunitas matematika yang didominasi pria.",
-            "Simbol tak terhingga (∞) disebut 'lemniscate'.",
-            "Kata 'calculus' berasal dari bahasa Latin untuk 'kerikil kecil', yang digunakan untuk menghitung pada zaman kuno.",
-            "Pythagoras, yang terkenal dengan teoremanya, juga memimpin sebuah kultus yang memuja angka dan percaya bahwa makan kacang adalah dosa.",
-            "Sistem penulisan angka Romawi tidak memiliki konsep angka nol.",
-            "René Descartes konon mendapatkan ide untuk sistem koordinat Kartesius saat melihat seekor lalat merayap di langit-langit kamarnya.",
-            "Évariste Galois mengembangkan dasar-dasar teori grup dan teori Galois malam sebelum ia tewas dalam duel pada usia 20 tahun.",
-            "Jari-jari kita dapat digunakan untuk sistem bilangan berbasis 10 (desimal), tetapi juga dapat digunakan untuk sistem berbasis 12 (duodesimal) dengan menggunakan ibu jari untuk menghitung ruas jari lainnya.",
-            "Istilah 'hundred' berasal dari kata Norse kuno 'hundrath', yang sebenarnya berarti 120 (10 x 12).",
-            "Matematika adalah satu-satunya 'sains' yang tidak memerlukan eksperimen untuk membuktikan kebenarannya; hanya logika dan pembuktian.",
-            "Banyak arsitektur kuno, seperti Piramida Giza, dibangun dengan prinsip-prinsip matematika yang sangat canggih.",
-            "Tanda plus (+) dan minus (-) pertama kali muncul dalam cetakan di Jerman pada akhir abad ke-15.",
-            "Di Taiwan, angka 4 sering dihindari di gedung-gedung (seperti lantai 4) karena pengucapannya mirip dengan kata 'mati'.",
-            "Dalam bahasa Inggris, 'forty' adalah satu-satunya angka yang hurufnya diurutkan secara alfabetis.",
-            "Emmy Noether adalah seorang matematikawan revolusioner yang karyanya dalam aljabar abstrak menjadi dasar bagi banyak fisika modern.",
-            "Sistem matriks dalam matematika dikembangkan secara luas oleh Arthur Cayley pada abad ke-19.",
-            "John Napier, penemu logaritma, juga merancang berbagai 'tulang' (Napier's Bones) untuk mempermudah perkalian.",
-            "Ada sekitar 1.771.47 cara berbeda untuk mengikat dasi, menurut ahli matematika Swedia.",
-            "Jika sebuah pizza memiliki jari-jari 'z' dan ketebalan 'a', volumenya adalah Pi × z × z × a.",
-            "Angka 1 diikuti oleh 100 angka nol disebut 'googol'.",
-            "Notasi modern untuk π baru digunakan secara luas setelah diperkenalkan oleh Leonhard Euler pada tahun 1737.",
-            "Matematika sering disebut sebagai 'Ratu Ilmu Pengetahuan' oleh Carl Friedrich Gauss.",
-            "Kata 'trigonometri' berasal dari bahasa Yunani yang berarti 'pengukuran segitiga'.",
-            "Orang Babilonia memecahkan persamaan kuadrat lebih dari 3000 tahun yang lalu.",
-            "Hypatia dari Alexandria adalah salah satu matematikawan wanita pertama yang tercatat dalam sejarah.",
-            "Konsep fungsi (y = f(x)) merupakan perkembangan penting dalam sejarah matematika yang memungkinkan pemodelan hubungan antar variabel.",
-            "Bilangan imajiner (i, akar kuadrat dari -1) awalnya dianggap 'tidak mungkin' tetapi sekarang sangat penting dalam bidang teknik dan fisika.",
-            "Sistem desimal modern (basis 10) berasal dari sistem angka Hindu-Arab.",
-            "Teori Permainan (Game Theory) adalah cabang matematika yang digunakan dalam ekonomi, ilmu politik, dan biologi untuk memodelkan pengambilan keputusan strategis.",
-            "Dalam bahasa Prancis, angka 90 disebut 'quatre-vingt-dix' yang secara harfiah berarti 'empat-dua puluh-sepuluh' (4 x 20 + 10).",
-            "Selembar kertas yang sangat besar secara teoretis bisa dilipat hingga ke bulan, jika Anda bisa melipatnya 42 kali.",
-            "Ada lebih banyak cara untuk mengatur catur di papan daripada jumlah elektron di alam semesta yang teramati (Nomor Shannon)."
-        ];
+    // --- Fakta Sejarah & Lain-lain ---
+    "Tanda sama dengan (=) diciptakan oleh matematikawan Robert Recorde pada tahun 1557 karena ia 'bosan menulis 'is equal to' berulang kali'.",
+    "Kata 'aljabar' berasal dari bahasa Arab 'al-jabr', yang berarti 'penyatuan kembali bagian-bagian yang rusak', dari judul buku matematikawan Persia, Al-Khwarizmi.",
+    "Kata 'algoritma' adalah latinisasi dari nama Al-Khwarizmi.",
+    "Sophie Germain adalah seorang matematikawan wanita yang menggunakan nama samaran pria, 'Monsieur Le Blanc', untuk dapat berpartisipasi dalam komunitas matematika yang didominasi pria.",
+    "Simbol tak terhingga (∞) disebut 'lemniscate'.",
+    "Kata 'calculus' berasal dari bahasa Latin untuk 'kerikil kecil', yang digunakan untuk menghitung pada zaman kuno.",
+    "Pythagoras, yang terkenal dengan teoremanya, juga memimpin sebuah kultus yang memuja angka dan percaya bahwa makan kacang adalah dosa.",
+    "Sistem penulisan angka Romawi tidak memiliki konsep angka nol.",
+    "René Descartes konon mendapatkan ide untuk sistem koordinat Kartesius saat melihat seekor lalat merayap di langit-langit kamarnya.",
+    "Évariste Galois mengembangkan dasar-dasar teori grup dan teori Galois malam sebelum ia tewas dalam duel pada usia 20 tahun.",
+    "Jari-jari kita dapat digunakan untuk sistem bilangan berbasis 10 (desimal), tetapi juga dapat digunakan untuk sistem berbasis 12 (duodesimal) dengan menggunakan ibu jari untuk menghitung ruas jari lainnya.",
+    "Istilah 'hundred' berasal dari kata Norse kuno 'hundrath', yang sebenarnya berarti 120 (10 x 12).",
+    "Matematika adalah satu-satunya 'sains' yang tidak memerlukan eksperimen untuk membuktikan kebenarannya; hanya logika dan pembuktian.",
+    "Banyak arsitektur kuno, seperti Piramida Giza, dibangun dengan prinsip-prinsip matematika yang sangat canggih.",
+    "Tanda plus (+) dan minus (-) pertama kali muncul dalam cetakan di Jerman pada akhir abad ke-15.",
+    "Di Taiwan, angka 4 sering dihindari di gedung-gedung (seperti lantai 4) karena pengucapannya mirip dengan kata 'mati'.",
+    "Dalam bahasa Inggris, 'forty' adalah satu-satunya angka yang hurufnya diurutkan secara alfabetis.",
+    "Emmy Noether adalah seorang matematikawan revolusioner yang karyanya dalam aljabar abstrak menjadi dasar bagi banyak fisika modern.",
+    "Sistem matriks dalam matematika dikembangkan secara luas oleh Arthur Cayley pada abad ke-19.",
+    "John Napier, penemu logaritma, juga merancang berbagai 'tulang' (Napier's Bones) untuk mempermudah perkalian.",
+    "Ada sekitar 1.771.47 cara berbeda untuk mengikat dasi, menurut ahli matematika Swedia.",
+    "Jika sebuah pizza memiliki jari-jari 'z' dan ketebalan 'a', volumenya adalah Pi × z × z × a.",
+    "Angka 1 diikuti oleh 100 angka nol disebut 'googol'.",
+    "Notasi modern untuk π baru digunakan secara luas setelah diperkenalkan oleh Leonhard Euler pada tahun 1737.",
+    "Matematika sering disebut sebagai 'Ratu Ilmu Pengetahuan' oleh Carl Friedrich Gauss.",
+    "Kata 'trigonometri' berasal dari bahasa Yunani yang berarti 'pengukuran segitiga'.",
+    "Orang Babilonia memecahkan persamaan kuadrat lebih dari 3000 tahun yang lalu.",
+    "Hypatia dari Alexandria adalah salah satu matematikawan wanita pertama yang tercatat dalam sejarah.",
+    "Konsep fungsi (y = f(x)) merupakan perkembangan penting dalam sejarah matematika yang memungkinkan pemodelan hubungan antar variabel.",
+    "Bilangan imajiner (i, akar kuadrat dari -1) awalnya dianggap 'tidak mungkin' tetapi sekarang sangat penting dalam bidang teknik dan fisika.",
+    "Sistem desimal modern (basis 10) berasal dari sistem angka Hindu-Arab.",
+    "Teori Permainan (Game Theory) adalah cabang matematika yang digunakan dalam ekonomi, ilmu politik, dan biologi untuk memodelkan pengambilan keputusan strategis.",
+    "Dalam bahasa Prancis, angka 90 disebut 'quatre-vingt-dix' yang secara harfiah berarti 'empat-dua puluh-sepuluh' (4 x 20 + 10).",
+    "Selembar kertas yang sangat besar secara teoretis bisa dilipat hingga ke bulan, jika Anda bisa melipatnya 42 kali.",
+    "Ada lebih banyak cara untuk mengatur catur di papan daripada jumlah elektron di alam semesta yang teramati (Nomor Shannon)."
+];
 
         // Elemen DOM
         const quizContainer = document.getElementById('quizContainer');
@@ -1297,10 +1475,26 @@
         const funFact = document.getElementById('funFact');
         const shareBtn = document.getElementById('shareBtn');
         const darkModeToggle = document.getElementById('darkModeToggle');
+        const gameModeSelector = document.getElementById('gameModeSelector');
+        const explanationPanel = document.getElementById('explanationPanel');
+        const explanationText = document.getElementById('explanationText');
+        const coinCount = document.getElementById('coinCount');
+        const totalCoinsDisplay = document.getElementById('totalCoins');
+        const achievementCount = document.getElementById('achievementCount');
+        const algebraProgress = document.getElementById('algebraProgress');
+        const geometryProgress = document.getElementById('geometryProgress');
+        const arithmeticProgress = document.getElementById('arithmeticProgress');
+        const algebraPercent = document.getElementById('algebraPercent');
+        const geometryPercent = document.getElementById('geometryPercent');
+        const arithmeticPercent = document.getElementById('arithmeticPercent');
 
         // Event Listeners
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
             btn.addEventListener('click', startQuiz);
+        });
+
+        document.querySelectorAll('.game-mode-btn').forEach(btn => {
+            btn.addEventListener('click', changeGameMode);
         });
 
         submitBtn.addEventListener('click', checkAnswer);
@@ -1328,6 +1522,15 @@
                 dailyChallengeProgress = data.dailyChallengeProgress || 0;
                 dailyChallengeCompleted = data.dailyChallengeCompleted || false;
                 darkMode = data.darkMode || false;
+                coins = data.coins || 0;
+                totalQuestionsAnswered = data.totalQuestionsAnswered || 0;
+                algebraCorrect = data.algebraCorrect || 0;
+                geometryCorrect = data.geometryCorrect || 0;
+                arithmeticCorrect = data.arithmeticCorrect || 0;
+                achievements.forEach(ach => {
+                    const savedAch = data.achievements?.find(a => a.id === ach.id);
+                    if (savedAch) ach.earned = savedAch.earned;
+                });
                 
                 if (darkMode) {
                     document.body.classList.add('dark-mode');
@@ -1336,6 +1539,9 @@
             }
             
             updateStats();
+            updateCoinDisplay();
+            updateAchievementCount();
+            updateSkillProgress();
         }
 
         // Save data to localStorage
@@ -1345,7 +1551,13 @@
                 highestLevel,
                 dailyChallengeProgress,
                 dailyChallengeCompleted,
-                darkMode
+                darkMode,
+                coins,
+                totalQuestionsAnswered,
+                algebraCorrect,
+                geometryCorrect,
+                arithmeticCorrect,
+                achievements: achievements.filter(a => a.earned)
             };
             localStorage.setItem('mathQuizData', JSON.stringify(data));
         }
@@ -1354,36 +1566,19 @@
         loadFromLocalStorage();
         showRandomMathFact();
 
-        // Fungsi untuk menampilkan fakta matematika acak
-function showRandomMathFact() {
-    const randomFact = mathFacts[Math.floor(Math.random() * mathFacts.length)];
-    const factElement = document.getElementById('funFact');
-    
-    // Tambahkan animasi fade out
-    factElement.style.opacity = '0';
-    factElement.style.transition = 'opacity 0.5s ease';
-    
-    setTimeout(() => {
-        factElement.innerHTML = `<div class="fun-fact-content"><strong>Fakta Menarik:</strong> ${randomFact}</div>`;
-        factElement.style.opacity = '1';
-    }, 500);
-}
-
-// Jalankan fungsi pertama kali saat halaman dimuat
-showRandomMathFact();
-
-// Set interval untuk mengganti fakta setiap 5 detik
-let factInterval = setInterval(showRandomMathFact, 5000);
-
-// Tambahkan juga ke bagian inisialisasi
-function initCanvas() {
-    // ... kode yang sudah ada ...
-    
-    // Hentikan interval sebelumnya jika ada
-    if (factInterval) clearInterval(factInterval);
-    // Mulai interval baru
-    factInterval = setInterval(showRandomMathFact, 5000);
-}
+        function showRandomMathFact() {
+            const randomFact = mathFacts[Math.floor(Math.random() * mathFacts.length)];
+            const factElement = document.getElementById('funFact');
+            
+            // Tambahkan animasi fade out
+            factElement.style.opacity = '0';
+            factElement.style.transition = 'opacity 0.5s ease';
+            
+            setTimeout(() => {
+                factElement.innerHTML = `<div class="fun-fact-content"><strong>Fakta Menarik:</strong> ${randomFact}</div>`;
+                factElement.style.opacity = '1';
+            }, 500);
+        }
 
         function clearCanvas() {
             if (ctx && canvas) {
@@ -1467,6 +1662,26 @@ function initCanvas() {
                 const mouseEvent = new MouseEvent('mouseup', {});
                 canvas.dispatchEvent(mouseEvent);
             }
+
+            // Mulai interval untuk mengganti fakta
+            if (factInterval) clearInterval(factInterval);
+            factInterval = setInterval(showRandomMathFact, 5000);
+        }
+
+        // Fungsi untuk mengubah mode permainan
+        function changeGameMode(e) {
+            gameMode = e.target.dataset.mode;
+            
+            // Update tampilan tombol mode
+            document.querySelectorAll('.game-mode-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            // Jika sedang dalam kuis, restart dengan mode baru
+            if (quizContainer.style.display === 'block') {
+                startQuiz({ target: { dataset: { difficulty: currentDifficulty } } });
+            }
         }
 
         // Fungsi untuk memulai kuis
@@ -1478,6 +1693,7 @@ function initCanvas() {
             failedAttempts = 0;
             levelTimes = [];
             currentStreak = 0;
+            speedRunTime = 0;
             
             switch(currentDifficulty) {
                 case 'easy':
@@ -1500,6 +1716,15 @@ function initCanvas() {
             initCanvas();
             startTimer();
             startLevel();
+            
+            // Jika mode speed run, mulai timer khusus
+            if (gameMode === 'speedrun') {
+                clearInterval(speedRunInterval);
+                speedRunTime = 0;
+                speedRunInterval = setInterval(() => {
+                    speedRunTime++;
+                }, 1000);
+            }
         }
 
         function startTimer() {
@@ -1513,11 +1738,13 @@ function initCanvas() {
 
         function stopTimer() {
             clearInterval(timerInterval);
+            if (speedRunInterval) clearInterval(speedRunInterval);
         }
 
         // Fungsi untuk memulai level
         function startLevel() {
             clearCanvas();
+            explanationPanel.style.display = 'none';
             
             currentLevelDisplay.textContent = currentLevel;
             currentScoreDisplay.textContent = currentScore;
@@ -1609,6 +1836,21 @@ function initCanvas() {
         }
 
         function showResult(isCorrect, timeSpent) {
+            // Update statistik kemampuan
+            totalQuestionsAnswered++;
+            if (isCorrect) {
+                if (currentQuestion.category === 'algebra') algebraCorrect++;
+                else if (currentQuestion.category === 'geometry') geometryCorrect++;
+                else if (currentQuestion.category === 'arithmetic') arithmeticCorrect++;
+            }
+            updateSkillProgress();
+            
+            // Tampilkan penjelasan jika ada
+            if (currentQuestion.explanation) {
+                explanationText.innerHTML = currentQuestion.explanation;
+                explanationPanel.style.display = 'block';
+            }
+
             if (isCorrect) {
                 resultIcon.className = 'result-icon correct';
                 resultIcon.textContent = '✓';
@@ -1634,11 +1876,24 @@ function initCanvas() {
                     resultMessage.innerHTML = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}<br><b>Poin diperoleh: ${pointsEarned}</b>`;
                 }
                 
+                // Bonus mode speed run
+                if (gameMode === 'speedrun' && timeSpent < 10) {
+                    const speedBonus = Math.floor((10 - timeSpent) * 2);
+                    pointsEarned += speedBonus;
+                    resultMessage.innerHTML += `<br>Bonus speed run: +${speedBonus}`;
+                }
+                
                 currentScore += pointsEarned;
                 currentStreak++;
                 if (currentStreak > bestStreak) {
                     bestStreak = currentStreak;
                 }
+                
+                // Tambahkan koin
+                const coinsEarned = Math.floor(pointsEarned / 2);
+                coins += coinsEarned;
+                resultMessage.innerHTML += `<br><br>🪙 Koin diperoleh: +${coinsEarned}`;
+                updateCoinDisplay();
                 
                 // Update daily challenge progress if applicable
                 if (currentQuestion.isDailyChallenge) {
@@ -1646,11 +1901,15 @@ function initCanvas() {
                     if (dailyChallengeProgress >= 5 && !dailyChallengeCompleted) {
                         dailyChallengeCompleted = true;
                         currentScore += 50; // Bonus for completing daily challenge
-                        resultMessage.innerHTML += `<br><br>🎉 Anda menyelesaikan Tantangan Harian! +50 poin bonus!`;
+                        coins += 25;
+                        resultMessage.innerHTML += `<br><br>🎉 Anda menyelesaikan Tantangan Harian! +50 poin dan 25 koin bonus!`;
+                        updateCoinDisplay();
                     }
                     saveToLocalStorage();
                 }
 
+                // Check achievements
+                checkAchievements(isCorrect, timeSpent);
             } else {
                 resultIcon.className = 'result-icon incorrect';
                 resultIcon.textContent = '✗';
@@ -1673,6 +1932,105 @@ function initCanvas() {
             saveToLocalStorage();
             resultModal.style.display = 'flex';
             stopTimer();
+        }
+
+        function updateCoinDisplay() {
+            coinCount.textContent = coins;
+            totalCoinsDisplay.textContent = coins;
+        }
+
+        function updateAchievementCount() {
+            const earned = achievements.filter(a => a.earned).length;
+            achievementCount.textContent = `${earned}/${achievements.length}`;
+        }
+
+        function updateSkillProgress() {
+            const algebraTotal = totalQuestionsAnswered > 0 ? Math.round((algebraCorrect / totalQuestionsAnswered) * 100) : 0;
+            const geometryTotal = totalQuestionsAnswered > 0 ? Math.round((geometryCorrect / totalQuestionsAnswered) * 100) : 0;
+            const arithmeticTotal = totalQuestionsAnswered > 0 ? Math.round((arithmeticCorrect / totalQuestionsAnswered) * 100) : 0;
+            
+            algebraProgress.style.width = `${algebraTotal}%`;
+            geometryProgress.style.width = `${geometryTotal}%`;
+            arithmeticProgress.style.width = `${arithmeticTotal}%`;
+            
+            algebraPercent.textContent = `${algebraTotal}%`;
+            geometryPercent.textContent = `${geometryTotal}%`;
+            arithmeticPercent.textContent = `${arithmeticTotal}%`;
+        }
+
+        function checkAchievements(isCorrect, timeSpent) {
+            // Achievement 1: Selesaikan level 5
+            if (currentLevel >= 5 && !achievements[0].earned) {
+                achievements[0].earned = true;
+                coins += achievements[0].reward;
+                showAchievement(0);
+            }
+            
+            // Achievement 2: 10 jawaban benar berturut-turut
+            if (currentStreak >= 10 && !achievements[1].earned) {
+                achievements[1].earned = true;
+                coins += achievements[1].reward;
+                showAchievement(1);
+            }
+            
+            // Achievement 3: 5 soal aljabar benar
+            if (currentQuestion.category === 'algebra' && algebraCorrect >= 5 && !achievements[2].earned) {
+                achievements[2].earned = true;
+                coins += achievements[2].reward;
+                showAchievement(2);
+            }
+            
+            // Achievement 4: Selesaikan level dalam <30 detik (speed run)
+            if (gameMode === 'speedrun' && timeSpent < 30 && !achievements[3].earned) {
+                achievements[3].earned = true;
+                coins += achievements[3].reward;
+                showAchievement(3);
+            }
+            
+            // Achievement 5: Coba semua tingkat kesulitan
+            // (Perlu implementasi tracking tingkat kesulitan yang sudah dicoba)
+            
+            // Achievement 6: Kumpulkan 100 koin
+            if (coins >= 100 && !achievements[5].earned) {
+                achievements[5].earned = true;
+                coins += achievements[5].reward; // Bonus tambahan
+                showAchievement(5);
+            }
+            
+            // Achievement 7: Selesaikan 20 level
+            if (currentLevel >= 20 && !achievements[6].earned) {
+                achievements[6].earned = true;
+                coins += achievements[6].reward;
+                showAchievement(6);
+            }
+            
+            // Achievement 8: Selesaikan level tanpa hint
+            if (hintsUsed === 0 && !achievements[7].earned) {
+                achievements[7].earned = true;
+                coins += achievements[7].reward;
+                showAchievement(7);
+            }
+            
+            updateCoinDisplay();
+            updateAchievementCount();
+            saveToLocalStorage();
+        }
+
+        function showAchievement(index) {
+            const achievement = achievements[index];
+            const achievementHtml = `
+                <div class="achievement-popup">
+                    <h3>Achievement Unlocked!</h3>
+                    <p>${achievement.name}</p>
+                    <small>${achievement.desc}</small>
+                    <small>+${achievement.reward} koin</small>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', achievementHtml);
+            setTimeout(() => {
+                document.querySelector('.achievement-popup').remove();
+            }, 3000);
         }
 
         function showHint() {
@@ -1699,6 +2057,13 @@ function initCanvas() {
                 currentLevel++;
                 startLevel();
                 startTimer();
+                
+                // Jika mode speed run, lanjutkan timer
+                if (gameMode === 'speedrun') {
+                    speedRunInterval = setInterval(() => {
+                        speedRunTime++;
+                    }, 1000);
+                }
             } else {
                 quizCompleted();
             }
@@ -1713,6 +2078,7 @@ function initCanvas() {
             // Update leaderboard with user's score
             leaderboardData[0].score = currentScore;
             leaderboardData[0].level = currentLevel;
+            leaderboardData[0].coins = coins;
             saveToLocalStorage();
         }
 
@@ -1761,6 +2127,7 @@ function initCanvas() {
                     <td>${user.name}</td>
                     <td>${user.score}</td>
                     <td>${user.level}</td>
+                    <td>${user.coins}</td>
                 `;
                 
                 leaderboardBody.appendChild(row);
@@ -1828,37 +2195,85 @@ function initCanvas() {
             () => {
                 const a = randInt(10, 50);
                 const b = randInt(10, 50);
-                return { question: `Berapakah hasil dari ${a} + ${b}?`, answer: a + b, hint: "Jumlahkan kedua angka tersebut." };
+                return { 
+                    question: `Berapakah hasil dari ${a} + ${b}?`, 
+                    answer: a + b, 
+                    hint: "Jumlahkan kedua angka tersebut.",
+                    category: 'arithmetic',
+                    explanation: `Penjumlahan sederhana: ${a} + ${b} = ${a + b}. Untuk menyelesaikan soal ini, Anda cukup menambahkan kedua bilangan tersebut.`
+                };
             },
             () => {
                 const a = randInt(5, 15);
                 const b = randInt(2, 9);
-                return { question: `Berapakah hasil dari ${a} × ${b}?`, answer: a * b, hint: "Kalikan kedua angka tersebut." };
+                return { 
+                    question: `Berapakah hasil dari ${a} × ${b}?`, 
+                    answer: a * b, 
+                    hint: "Kalikan kedua angka tersebut.",
+                    category: 'arithmetic',
+                    explanation: `Perkalian dasar: ${a} × ${b} = ${a * b}. Anda bisa menjumlahkan ${a} sebanyak ${b} kali untuk mendapatkan hasilnya.`
+                };
             },
             () => {
                 const den1 = 2, den2 = 4, num1 = 1, num2 = 1;
-                return { question: `Berapakah hasil dari 1/${den1} + 1/${den2}? (jawaban dalam desimal)`, answer: 0.75, hint: "Samakan penyebutnya terlebih dahulu." };
+                return { 
+                    question: `Berapakah hasil dari 1/${den1} + 1/${den2}? (jawaban dalam desimal)`, 
+                    answer: 0.75, 
+                    hint: "Samakan penyebutnya terlebih dahulu.",
+                    category: 'arithmetic',
+                    explanation: `Untuk menjumlahkan pecahan, samakan penyebutnya terlebih dahulu. 1/2 = 2/4, jadi 2/4 + 1/4 = 3/4 = 0.75.`
+                };
             },
             () => {
                 const numbers = [randInt(1, 5) * 2, randInt(1, 5) * 2 + 1, randInt(6, 10) * 2 + 1];
                 const answer = numbers[0];
-                return { question: `Manakah bilangan genap dari: ${shuffleArray(numbers).join(', ')}?`, answer, hint: "Bilangan genap adalah bilangan yang habis dibagi 2." };
+                return { 
+                    question: `Manakah bilangan genap dari: ${shuffleArray(numbers).join(', ')}?`, 
+                    answer, 
+                    hint: "Bilangan genap adalah bilangan yang habis dibagi 2.",
+                    category: 'arithmetic',
+                    explanation: `Bilangan genap adalah bilangan yang habis dibagi 2 (tidak ada sisa). Dari pilihan ${numbers.join(', ')}, bilangan genapnya adalah ${answer}.`
+                };
             },
             () => {
                 const jam = randInt(1, 12);
                 const tambahan = randInt(2, 6);
                 const answer = (jam + tambahan) % 12 || 12;
-                return { question: `Jika sekarang jam ${jam}, jam berapakah ${tambahan} jam lagi?`, answer, hint: "Tambahkan jam sekarang dengan durasi waktu." };
+                return { 
+                    question: `Jika sekarang jam ${jam}, jam berapakah ${tambahan} jam lagi?`, 
+                    answer, 
+                    hint: "Tambahkan jam sekarang dengan durasi waktu.",
+                    category: 'arithmetic',
+                    explanation: `Jam ${jam} + ${tambahan} jam = jam ${jam + tambahan}. Karena jam hanya sampai 12, maka hasilnya adalah jam ${answer}.`
+                };
             },
-            () => ({ question: `1 kilometer sama dengan berapa meter?`, answer: 1000, hint: "Kilo berarti seribu." }),
+            () => ({ 
+                question: `1 kilometer sama dengan berapa meter?`, 
+                answer: 1000, 
+                hint: "Kilo berarti seribu.",
+                category: 'arithmetic',
+                explanation: `Awalan 'kilo' dalam sistem metrik berarti 1000. Jadi 1 kilometer = 1000 meter.`
+            }),
             () => {
                 const sisi = randInt(4, 10);
-                return { question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, answer: 4 * sisi, hint: "Keliling persegi adalah 4 kali panjang sisinya." };
+                return { 
+                    question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, 
+                    answer: 4 * sisi, 
+                    hint: "Keliling persegi adalah 4 kali panjang sisinya.",
+                    category: 'geometry',
+                    explanation: `Rumus keliling persegi adalah 4 × sisi. Dengan sisi ${sisi} cm, kelilingnya adalah 4 × ${sisi} = ${4 * sisi} cm.`
+                };
             },
              () => {
                 const romanMap = {1:'I', 4:'IV', 5:'V', 9:'IX', 10:'X'};
                 const num = [1,4,5,9,10][randInt(0,4)];
-                return { question: `Angka romawi dari ${num} adalah?`, answer: romanMap[num], hint: 'Ingat kembali simbol dasar angka romawi.' };
+                return { 
+                    question: `Angka romawi dari ${num} adalah?`, 
+                    answer: romanMap[num], 
+                    hint: 'Ingat kembali simbol dasar angka romawi.',
+                    category: 'arithmetic',
+                    explanation: `Angka Romawi menggunakan kombinasi huruf: I=1, V=5, X=10. ${num} dalam angka Romawi adalah ${romanMap[num]}.`
+                };
             }
         ];
 
@@ -1866,36 +2281,84 @@ function initCanvas() {
         const mediumQuestions = [
             () => {
                 const a = randInt(5, 15), b = randInt(2, 5), c = randInt(3, 10);
-                return { question: `Berapakah hasil dari ${a} + ${b} × ${c}?`, answer: a + b * c, hint: "Kerjakan perkalian terlebih dahulu (aturan BODMAS/PEMDAS)." };
+                return { 
+                    question: `Berapakah hasil dari ${a} + ${b} × ${c}?`, 
+                    answer: a + b * c, 
+                    hint: "Kerjakan perkalian terlebih dahulu (aturan BODMAS/PEMDAS).",
+                    category: 'arithmetic',
+                    explanation: `Menurut aturan operasi matematika (BODMAS/PEMDAS), perkalian dikerjakan sebelum penjumlahan. ${b} × ${c} = ${b * c}, lalu ${a} + ${b * c} = ${a + b * c}.`
+                };
             },
             () => {
                 const a = randInt(20, 50), b = randInt(100, 200);
-                return { question: `${a}% dari ${b} adalah?`, answer: (a / 100) * b, hint: "Ubah persentase menjadi desimal (bagi 100), lalu kalikan." };
+                return { 
+                    question: `${a}% dari ${b} adalah?`, 
+                    answer: (a / 100) * b, 
+                    hint: "Ubah persentase menjadi desimal (bagi 100), lalu kalikan.",
+                    category: 'arithmetic',
+                    explanation: `Untuk menghitung persentase, ubah % menjadi desimal (${a}% = ${a/100}) lalu kalikan dengan bilangan (${a/100} × ${b} = ${(a/100)*b}).`
+                };
             },
             () => {
                 const a = randInt(4, 10), b = randInt(11, 20);
-                return { question: `KPK dari ${a} dan ${b} adalah?`, answer: getLcm(a, b), hint: "Kelipatan Persekutuan Terkecil." };
+                return { 
+                    question: `KPK dari ${a} dan ${b} adalah?`, 
+                    answer: getLcm(a, b), 
+                    hint: "Kelipatan Persekutuan Terkecil.",
+                    category: 'arithmetic',
+                    explanation: `KPK (Kelipatan Persekutuan Terkecil) dari ${a} dan ${b} adalah bilangan terkecil yang bisa dibagi oleh ${a} dan ${b}. KPKnya adalah ${getLcm(a, b)}.`
+                };
             },
             () => {
                 const x = randInt(2, 10), b = randInt(5, 15);
                 const c = x + b;
-                return { question: `Jika x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x." };
+                return { 
+                    question: `Jika x + ${b} = ${c}, berapakah nilai x?`, 
+                    answer: x, 
+                    hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x.",
+                    category: 'algebra',
+                    explanation: `Untuk mencari x, kurangi kedua sisi dengan ${b}: x + ${b} - ${b} = ${c} - ${b}, sehingga x = ${x}.`
+                };
             },
             () => {
                 const a = randInt(-15, -5), b = randInt(6, 20);
-                return { question: `Berapakah hasil dari ${a} + ${b}?`, answer: a + b, hint: "Angka negatif ditambah positif sama dengan pengurangan." };
+                return { 
+                    question: `Berapakah hasil dari ${a} + ${b}?`, 
+                    answer: a + b, 
+                    hint: "Angka negatif ditambah positif sama dengan pengurangan.",
+                    category: 'arithmetic',
+                    explanation: `Menjumlahkan bilangan negatif dan positif sama dengan mengurangi bilangan besar dengan kecil, lalu menggunakan tanda bilangan yang lebih besar. ${a} + ${b} = ${a + b}.`
+                };
             },
             () => {
                 const arr = [randInt(2, 5), randInt(6, 10), randInt(11, 15)];
                 const answer = arr.reduce((sum, val) => sum + val, 0) / arr.length;
-                return { question: `Berapakah rata-rata dari ${arr.join(', ')}?`, answer: parseFloat(answer.toFixed(2)), hint: "Jumlahkan semua angka lalu bagi dengan banyaknya angka." };
+                return { 
+                    question: `Berapakah rata-rata dari ${arr.join(', ')}?`, 
+                    answer: parseFloat(answer.toFixed(2)), 
+                    hint: "Jumlahkan semua angka lalu bagi dengan banyaknya angka.",
+                    category: 'arithmetic',
+                    explanation: `Rata-rata = (jumlah semua nilai) / (banyak nilai). (${arr.join(' + ')}) / ${arr.length} = ${arr.reduce((a,b) => a+b)} / ${arr.length} = ${answer.toFixed(2)}.`
+                };
             },
             () => {
                 const a = randInt(2, 6);
                 const b = randInt(2, 5);
-                return { question: `Berapakah hasil dari ${a}² + √${b*b}?`, answer: a * a + b, hint: "Hitung pangkat dan akar terlebih dahulu, baru jumlahkan." };
+                return { 
+                    question: `Berapakah hasil dari ${a}² + √${b*b}?`, 
+                    answer: a * a + b, 
+                    hint: "Hitung pangkat dan akar terlebih dahulu, baru jumlahkan.",
+                    category: 'arithmetic',
+                    explanation: `${a}² = ${a*a} dan √${b*b} = ${b}. Jadi ${a*a} + ${b} = ${a*a + b}.`
+                };
             },
-            () => ({ question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, answer: "lancip", hint: "Lawan dari sudut tumpul." })
+            () => ({ 
+                question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, 
+                answer: "lancip", 
+                hint: "Lawan dari sudut tumpul.",
+                category: 'geometry',
+                explanation: `Sudut diklasifikasikan berdasarkan besarnya: lancip (<90°), siku-siku (90°), tumpul (>90°), dan lurus (180°).`
+            })
         ];
 
         // BANK SOAL TINGKAT SULIT (HARD)
@@ -1904,58 +2367,134 @@ function initCanvas() {
                 const x = randInt(2, 10);
                 const a = randInt(2, 5), b = randInt(1, 10);
                 const c = a * x + b;
-                return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya.", isDailyChallenge: true };
+                return { 
+                    question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, 
+                    answer: x, 
+                    hint: "Isolasi variabel x untuk menemukan nilainya.", 
+                    isDailyChallenge: true,
+                    category: 'algebra',
+                    explanation: `Pertama, kurangi kedua sisi dengan ${b}: ${a}x = ${c} - ${b} → ${a}x = ${a*x}. Lalu bagi kedua sisi dengan ${a}: x = ${x}.`
+                };
             },
             () => {
                 const num = randInt(20, 50);
-                return { question: `Faktor prima dari ${num} adalah? (contoh: 2 x 3^2)`, answer: getPrimeFactorization(num), hint: "Bagi terus bilangan dengan bilangan prima terkecil." };
+                return { 
+                    question: `Faktor prima dari ${num} adalah? (contoh: 2 x 3^2)`, 
+                    answer: getPrimeFactorization(num), 
+                    hint: "Bagi terus bilangan dengan bilangan prima terkecil.",
+                    category: 'arithmetic',
+                    explanation: `Faktorisasi prima adalah pecahan bilangan menjadi perkalian bilangan prima. Faktor prima ${num} adalah ${getPrimeFactorization(num)}.`
+                };
             },
             () => {
                 const sisi = randInt(3, 7);
-                return { question: `Volume sebuah kubus dengan panjang rusuk ${sisi} cm adalah? (cm³)?`, answer: sisi * sisi * sisi, hint: "Volume kubus adalah rusuk pangkat tiga." };
+                return { 
+                    question: `Volume sebuah kubus dengan panjang rusuk ${sisi} cm adalah? (cm³)?`, 
+                    answer: sisi * sisi * sisi, 
+                    hint: "Volume kubus adalah rusuk pangkat tiga.",
+                    category: 'geometry',
+                    explanation: `Rumus volume kubus adalah sisi × sisi × sisi atau sisi³. Dengan rusuk ${sisi} cm, volumenya adalah ${sisi}³ = ${sisi*sisi*sisi} cm³.`
+                };
             },
             () => {
-                return { question: `Berapakah peluang munculnya angka genap pada lemparan sebuah dadu? (jawaban dalam desimal)`, answer: 0.5, hint: "Jumlah sisi genap dibagi total sisi." };
+                return { 
+                    question: `Berapakah peluang munculnya angka genap pada lemparan sebuah dadu? (jawaban dalam desimal)`, 
+                    answer: 0.5, 
+                    hint: "Jumlah sisi genap dibagi total sisi.",
+                    category: 'arithmetic',
+                    explanation: `Dadu memiliki 6 sisi: 1,2,3,4,5,6. Angka genap ada 3 (2,4,6). Peluang = 3/6 = 0.5.`
+                };
             },
             () => {
                 const x = randInt(2, 5);
                 const c = randInt(1, 5);
-                return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", isDailyChallenge: true };
+                return { 
+                    question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, 
+                    answer: x * x - c, 
+                    hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", 
+                    isDailyChallenge: true,
+                    category: 'algebra',
+                    explanation: `Fungsi f(x) = x² - ${c}. Untuk mencari f(${x}), ganti x dengan ${x}: f(${x}) = ${x}² - ${c} = ${x*x} - ${c} = ${x*x - c}.`
+                };
             },
             () => {
                 const base = randInt(2, 3);
                 const start = base * randInt(1, 3);
                 const sequence = [start, start * base, start * base * base, start * base * base * base];
-                return { question: `Lanjutkan deret berikut: ${sequence.slice(0,3).join(', ')}, ...`, answer: sequence[3], hint: "Perhatikan rasio perkalian antar suku." };
+                return { 
+                    question: `Lanjutkan deret berikut: ${sequence.slice(0,3).join(', ')}, ...`, 
+                    answer: sequence[3], 
+                    hint: "Perhatikan rasio perkalian antar suku.",
+                    category: 'arithmetic',
+                    explanation: `Deret ini adalah deret geometri dengan rasio ${base}. Setiap suku dikali ${base} untuk mendapatkan suku berikutnya. Jadi setelah ${sequence[2]} adalah ${sequence[2]} × ${base} = ${sequence[3]}.`
+                };
             }
         ];
 
         // BANK SOAL TINGKAT EKSTREM (EXTREME)
         const extremeQuestions = [
-            () => ({ question: "Berapakah hasil dari sin(30°) + cos(60°)? (dalam desimal)", answer: 1, hint: "Gunakan nilai dari sudut-sudut istimewa trigonometri." }),
+            () => ({ 
+                question: "Berapakah hasil dari sin(30°) + cos(60°)? (dalam desimal)", 
+                answer: 1, 
+                hint: "Gunakan nilai dari sudut-sudut istimewa trigonometri.",
+                category: 'geometry',
+                explanation: `Nilai sudut istimewa: sin(30°) = 0.5 dan cos(60°) = 0.5. Jadi 0.5 + 0.5 = 1.`
+            }),
             () => {
                 const a = randInt(2, 5), b = randInt(2, 5);
-                return { question: `Turunan dari f(x) = ${a}x² + ${b}x adalah? (format: 12x+3)`, answer: `${2 * a}x+${b}`, hint: "Gunakan aturan pangkat: d/dx(ax^n) = n*ax^(n-1)." };
+                return { 
+                    question: `Turunan dari f(x) = ${a}x² + ${b}x adalah? (format: 12x+3)`, 
+                    answer: `${2 * a}x+${b}`, 
+                    hint: "Gunakan aturan pangkat: d/dx(ax^n) = n*ax^(n-1).",
+                    category: 'algebra',
+                    explanation: `Turunan dari ${a}x² adalah ${2*a}x (pangkat turun 1, kalikan dengan pangkat awal). Turunan dari ${b}x adalah ${b}. Jadi turunannya adalah ${2*a}x + ${b}.`
+                };
             },
             () => {
                 const a = randInt(2, 4), b = randInt(3, 5);
-                return { question: `Jika 2^${a} × 2^${b} = 2^x, maka nilai x adalah?`, answer: a + b, hint: "Jika basisnya sama, pangkatnya dijumlahkan." };
+                return { 
+                    question: `Jika 2^${a} × 2^${b} = 2^x, maka nilai x adalah?`, 
+                    answer: a + b, 
+                    hint: "Jika basisnya sama, pangkatnya dijumlahkan.",
+                    category: 'algebra',
+                    explanation: `Aturan eksponen: a^m × a^n = a^(m+n). Jadi 2^${a} × 2^${b} = 2^(${a}+${b}) = 2^${a+b}. Maka x = ${a + b}.`
+                };
             },
             () => {
                 const a = randInt(1, 5), b = randInt(1, 5), c = randInt(1, 5), d = randInt(1, 5);
                 const real = a + c;
                 const imag = b - d;
-                return { question: `Berapakah hasil dari (${a} + ${b}i) + (${c} - ${d}i)? (format: 5+3i)`, answer: `${real}+${imag}i`, hint: "Jumlahkan bagian riil dengan riil, dan imajiner dengan imajiner." };
+                return { 
+                    question: `Berapakah hasil dari (${a} + ${b}i) + (${c} - ${d}i)? (format: 5+3i)`, 
+                    answer: `${real}+${imag}i`, 
+                    hint: "Jumlahkan bagian riil dengan riil, dan imajiner dengan imajiner.",
+                    category: 'algebra',
+                    explanation: `Penjumlahan bilangan kompleks: (a+bi) + (c+di) = (a+c)+(b+d)i. Dalam kasus ini: (${a}+${c}) + (${b}-${d})i = ${real}+${imag}i.`
+                };
             },
             () => {
                 const a = randInt(1, 5), b = randInt(1, 5);
                 const sum = a + b, prod = a * b;
-                return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", isDailyChallenge: true };
+                return { 
+                    question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, 
+                    answer: a * a + b * b, 
+                    hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", 
+                    isDailyChallenge: true,
+                    category: 'algebra',
+                    explanation: `Kita tahu (a+b)² = a² + b² + 2ab. Jadi a² + b² = (a+b)² - 2ab = ${sum}² - 2×${prod} = ${sum*sum} - ${2*prod} = ${a*a + b*b}.`
+                };
             },
-            () => ({ question: `Berapakah hasil dari integral ∫(2x) dx? (format: x^2+C)`, answer: "x^2+C", hint: "Gunakan aturan integral pangkat: ∫ax^n dx = (a/(n+1))x^(n+1) + C." })
+            () => ({ 
+                question: `Berapakah hasil dari integral ∫(2x) dx? (format: x^2+C)`, 
+                answer: "x^2+C", 
+                hint: "Gunakan aturan integral pangkat: ∫ax^n dx = (a/(n+1))x^(n+1) + C.",
+                category: 'algebra',
+                explanation: `Integral dari 2x adalah (2/2)x² + C = x² + C. 'C' adalah konstanta integrasi yang selalu ditambahkan.`
+            })
         ];
 
-        // Fungsi utama untuk generate soal
+        // --- MODIFICATION START ---
+        // Fungsi utama untuk generate soal (diperbaiki)
         function generateQuestion(difficulty) {
             let questionBank;
             switch(difficulty) {
@@ -1975,17 +2514,49 @@ function initCanvas() {
                     questionBank = easyQuestions;
             }
 
-            // Pilih fungsi pembuat soal secara acak dari bank soal
-            const questionGenerator = questionBank[Math.floor(Math.random() * questionBank.length)];
+            // Temukan indeks soal yang belum digunakan untuk tingkat kesulitan ini
+            let availableIndices = [];
+            for (let i = 0; i < questionBank.length; i++) {
+                if (!usedQuestions.has(`${difficulty}-${i}`)) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // Jika semua soal di tingkat ini sudah digunakan, reset dan gunakan kembali
+            if (availableIndices.length === 0) {
+                // Hapus semua soal yang sudah digunakan dari tingkat kesulitan ini
+                const newUsedQuestions = new Set();
+                usedQuestions.forEach(q => {
+                    if (!q.startsWith(difficulty + '-')) {
+                        newUsedQuestions.add(q);
+                    }
+                });
+                usedQuestions = newUsedQuestions;
+                
+                // Isi kembali indeks yang tersedia
+                for (let i = 0; i < questionBank.length; i++) {
+                    availableIndices.push(i);
+                }
+            }
+
+            // Pilih indeks acak dari yang tersedia
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            
+            // Tandai soal ini sebagai sudah digunakan
+            usedQuestions.add(`${difficulty}-${randomIndex}`);
+
+            // Ambil fungsi pembuat soal
+            const questionGenerator = questionBank[randomIndex];
             const generated = questionGenerator();
             
-            // Generate opsi jawaban jika diperlukan
+            // Buat opsi jawaban jika diperlukan
             if (useOptions) {
                 generated.options = generateOptions(generated.answer);
             }
 
             return generated;
         }
+        // --- MODIFICATION END ---
 
         function generateOptions(correctAnswer) {
             const options = [correctAnswer];
