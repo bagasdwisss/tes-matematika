@@ -14,6 +14,9 @@
             --background: #fff;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             --border-radius: 8px;
+            --dark-bg: #1a1a2e;
+            --dark-text: #f0f0f0;
+            --dark-secondary: #16213e;
         }
 
         * {
@@ -27,6 +30,12 @@
             background-color: var(--secondary);
             color: var(--text);
             line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
         }
 
         .container {
@@ -42,6 +51,12 @@
             background-color: var(--background);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode header {
+            background-color: var(--dark-secondary);
+            color: var(--dark-text);
         }
 
         h1 {
@@ -97,6 +112,11 @@
             border-radius: var(--border-radius);
             margin-bottom: 30px;
             box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .settings-panel {
+            background-color: var(--dark-secondary);
         }
 
         .settings-title {
@@ -164,6 +184,11 @@
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
             margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .quiz-container {
+            background-color: var(--dark-secondary);
         }
 
         .quiz-header {
@@ -173,6 +198,10 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid #eee;
+        }
+
+        .dark-mode .quiz-header {
+            border-bottom-color: #444;
         }
 
         .level-info {
@@ -210,6 +239,14 @@
             font-size: 1.1rem;
             margin-bottom: 15px;
             transition: border 0.3s;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        .dark-mode .answer-field {
+            background-color: #16213e;
+            border-color: #444;
+            color: var(--dark-text);
         }
 
         .answer-field:focus {
@@ -234,9 +271,19 @@
             font-size: 1rem;
         }
 
+        .dark-mode .option-btn {
+            background-color: #16213e;
+            border-color: #444;
+            color: var(--dark-text);
+        }
+
         .option-btn:hover {
             border-color: var(--primary);
             background-color: var(--secondary);
+        }
+
+        .dark-mode .option-btn:hover {
+            background-color: #1a1a2e;
         }
 
         .quiz-controls {
@@ -261,6 +308,10 @@
             display: flex;
             align-items: center;
             gap: 5px;
+        }
+
+        .dark-mode .hint-btn {
+            color: #aaa;
         }
 
         .hint-btn:hover {
@@ -298,6 +349,11 @@
             background-color: white;
         }
 
+        .dark-mode .scratch-pad {
+            border-color: #444;
+            background-color: #16213e;
+        }
+
         .stats-container {
             background-color: var(--background);
             padding: 20px;
@@ -305,6 +361,11 @@
             box-shadow: var(--shadow);
             margin-bottom: 30px;
             display: none;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .stats-container {
+            background-color: var(--dark-secondary);
         }
 
         .stats-title {
@@ -323,6 +384,11 @@
             background-color: var(--secondary);
             padding: 15px;
             border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .stat-item {
+            background-color: #1a1a2e;
         }
 
         .stat-label {
@@ -356,6 +422,11 @@
             max-width: 500px;
             width: 90%;
             box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .hint-content {
+            background-color: var(--dark-secondary);
         }
 
         .hint-header {
@@ -409,6 +480,11 @@
             width: 90%;
             text-align: center;
             box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .result-content {
+            background-color: var(--dark-secondary);
         }
 
         .result-icon {
@@ -464,8 +540,304 @@
             color: var(--text);
         }
 
+        .dark-mode .home-btn {
+            background-color: #444;
+            color: var(--dark-text);
+        }
+
         .home-btn:hover {
             background-color: #ddd;
+        }
+
+        .dark-mode .home-btn:hover {
+            background-color: #555;
+        }
+
+        /* New styles for additional features */
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .timer-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.1rem;
+        }
+
+        .timer {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .streak-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 15px;
+        }
+
+        .streak-count {
+            font-weight: bold;
+            color: #ff9500;
+        }
+
+        .leaderboard-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: #5d3a9b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .daily-challenge-btn {
+            position: fixed;
+            bottom: 140px;
+            right: 20px;
+            background-color: #6bce70;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        .leaderboard-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .leaderboard-content {
+            background-color: var(--background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .dark-mode .leaderboard-content {
+            background-color: var(--dark-secondary);
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .leaderboard-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .close-leaderboard {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th, 
+        .leaderboard-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dark-mode .leaderboard-table th,
+        .dark-mode .leaderboard-table td {
+            border-bottom-color: #444;
+        }
+
+        .leaderboard-table th {
+            background-color: var(--secondary);
+            font-weight: bold;
+        }
+
+        .dark-mode .leaderboard-table th {
+            background-color: #1a1a2e;
+        }
+
+        .leaderboard-table tr:nth-child(even) {
+            background-color: var(--secondary);
+        }
+
+        .dark-mode .leaderboard-table tr:nth-child(even) {
+            background-color: #1a1a2e;
+        }
+
+        .user-rank {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .share-btn {
+            background-color: #4a6bff;
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .share-btn:hover {
+            background-color: #3a5bed;
+        }
+
+        .daily-challenge-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .daily-challenge-content {
+            background-color: var(--background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .dark-mode .daily-challenge-content {
+            background-color: var(--dark-secondary);
+        }
+
+        .daily-challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .daily-challenge-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .close-daily-challenge {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .daily-challenge-badge {
+            display: inline-block;
+            background-color: #6bce70;
+            color: white;
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #eee;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            height: 20px;
+        }
+
+        .dark-mode .progress-container {
+            background-color: #444;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .fun-fact {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .dark-mode .fun-fact {
+            background-color: #1a1a2e;
+        }
+
+        .streak-fire {
+            color: #ff9500;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         @media (max-width: 768px) {
@@ -497,6 +869,22 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+
+            .theme-toggle, 
+            .leaderboard-btn,
+            .daily-challenge-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .leaderboard-btn {
+                bottom: 70px;
+            }
+
+            .daily-challenge-btn {
+                bottom: 120px;
+            }
         }
     </style>
 </head>
@@ -517,6 +905,13 @@
                         <span class="slider"></span>
                     </label>
                 </label>
+                <label>
+                    <span>Mode Gelap:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="darkModeToggle">
+                        <span class="slider"></span>
+                    </label>
+                </label>
             </div>
         </div>
 
@@ -532,10 +927,18 @@
                 <div class="level-info">
                     Level <span id="currentLevel">1</span>/20 - 
                     <span id="difficultyDisplay">Mudah</span>
+                    <div class="streak-container">
+                        <span class="streak-fire">🔥</span>
+                        <span class="streak-count" id="streakCount">0</span>
+                    </div>
                 </div>
                 <div class="score-container">
                     <span>Poin:</span>
                     <span class="score" id="currentScore">0</span>
+                    <div class="timer-container">
+                        <span>⏱️</span>
+                        <span class="timer" id="timer">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -580,7 +983,22 @@
                     <div class="stat-label">Tips Digunakan</div>
                     <div class="stat-value" id="hintsUsed">0</div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-label">Streak Terbaik</div>
+                    <div class="stat-value" id="bestStreak">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Level Tertinggi</div>
+                    <div class="stat-value" id="highestLevel">0</div>
+                </div>
             </div>
+            <button class="share-btn" id="shareBtn">
+                <span>📤</span> Bagikan Hasil
+            </button>
+        </div>
+
+        <div class="fun-fact" id="funFact">
+            <strong>Fakta Menarik:</strong> Tahukah Anda bahwa angka 0.999... (angka 9 berulang tak terbatas) sebenarnya sama dengan 1?
         </div>
     </div>
 
@@ -607,6 +1025,51 @@
         </div>
     </div>
 
+    <div class="leaderboard-modal" id="leaderboardModal">
+        <div class="leaderboard-content">
+            <div class="leaderboard-header">
+                <h3 class="leaderboard-title">Papan Peringkat</h3>
+                <button class="close-leaderboard" id="closeLeaderboard">&times;</button>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Peringkat</th>
+                        <th>Nama</th>
+                        <th>Skor</th>
+                        <th>Level</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Leaderboard data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="daily-challenge-modal" id="dailyChallengeModal">
+        <div class="daily-challenge-content">
+            <div class="daily-challenge-header">
+                <h3 class="daily-challenge-title">Tantangan Harian</h3>
+                <button class="close-daily-challenge" id="closeDailyChallenge">&times;</button>
+            </div>
+            <div class="daily-challenge-badge">Hari Ini: Aljabar Dasar</div>
+            <p>Selesaikan 5 soal aljabar untuk mendapatkan poin bonus!</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="challengeProgress" style="width: 0%"></div>
+            </div>
+            <p>Progress: <span id="challengeProgressText">0</span>/5</p>
+            <div class="fun-fact">
+                <strong>Fakta Menarik:</strong> Kata "aljabar" berasal dari bahasa Arab "al-jabr" yang berarti "penyatuan bagian yang rusak".
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating action buttons -->
+    <button class="theme-toggle" id="themeToggle">🌓</button>
+    <button class="leaderboard-btn" id="leaderboardBtn">🏆</button>
+    <button class="daily-challenge-btn" id="dailyChallengeBtn">📅</button>
+
     <script>
         // Variabel global
         let currentDifficulty = '';
@@ -620,6 +1083,34 @@
         let currentQuestion = {};
         let canvas;
         let ctx;
+        let timerInterval;
+        let currentStreak = 0;
+        let bestStreak = 0;
+        let highestLevel = 0;
+        let dailyChallengeProgress = 0;
+        let dailyChallengeCompleted = false;
+        let darkMode = false;
+
+        // Data leaderboard dummy (bisa diganti dengan data dari localStorage atau backend)
+        let leaderboardData = [
+            { name: "Anda", score: 0, level: 0 },
+            { name: "Matematikus", score: 450, level: 20 },
+            { name: "Pecinta Angka", score: 380, level: 18 },
+            { name: "Ahli Aljabar", score: 320, level: 16 },
+            { name: "Raja Geometri", score: 290, level: 15 }
+        ];
+
+        // Fakta matematika acak
+        const mathFacts = [
+            "Tahukah Anda bahwa angka 0.999... (angka 9 berulang tak terbatas) sebenarnya sama dengan 1?",
+            "Dalam matematika, ada bilangan yang disebut 'bilangan sempurna' yang jumlah pembagi positifnya (selain dirinya sendiri) sama dengan bilangan itu sendiri. Contoh: 6 (1+2+3=6).",
+            "Kata 'matematika' berasal dari bahasa Yunani 'mathema' yang berarti 'pengetahuan, studi, pembelajaran'.",
+            "Angka 2 adalah satu-satunya bilangan prima genap.",
+            "Konsep nol (0) pertama kali dikembangkan di India oleh matematikawan Brahmagupta pada abad ke-7.",
+            "Ada lebih banyak cara mengocok setumpuk kartu daripada jumlah atom di Bumi!",
+            "Pi (π) adalah bilangan irasional yang tidak pernah berakhir dan tidak memiliki pola berulang.",
+            "Dalam sekumpulan 23 orang, peluang dua orang memiliki tanggal lahir yang sama adalah lebih dari 50%."
+        ];
 
         // Elemen DOM
         const quizContainer = document.getElementById('quizContainer');
@@ -648,6 +1139,23 @@
         const scratchPad = document.getElementById('scratchPad');
         const useOptionsToggle = document.getElementById('useOptionsToggle');
         const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const timerDisplay = document.getElementById('timer');
+        const streakCount = document.getElementById('streakCount');
+        const bestStreakDisplay = document.getElementById('bestStreak');
+        const highestLevelDisplay = document.getElementById('highestLevel');
+        const leaderboardBtn = document.getElementById('leaderboardBtn');
+        const leaderboardModal = document.getElementById('leaderboardModal');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const closeLeaderboard = document.getElementById('closeLeaderboard');
+        const dailyChallengeBtn = document.getElementById('dailyChallengeBtn');
+        const dailyChallengeModal = document.getElementById('dailyChallengeModal');
+        const closeDailyChallenge = document.getElementById('closeDailyChallenge');
+        const challengeProgress = document.getElementById('challengeProgress');
+        const challengeProgressText = document.getElementById('challengeProgressText');
+        const funFact = document.getElementById('funFact');
+        const shareBtn = document.getElementById('shareBtn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
 
         // Event Listeners
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -661,6 +1169,54 @@
         nextBtn.addEventListener('click', nextLevel);
         useOptionsToggle.addEventListener('change', toggleAnswerOptions);
         clearCanvasBtn.addEventListener('click', clearCanvas);
+        themeToggle.addEventListener('click', toggleTheme);
+        leaderboardBtn.addEventListener('click', showLeaderboard);
+        closeLeaderboard.addEventListener('click', () => leaderboardModal.style.display = 'none');
+        dailyChallengeBtn.addEventListener('click', showDailyChallenge);
+        closeDailyChallenge.addEventListener('click', () => dailyChallengeModal.style.display = 'none');
+        shareBtn.addEventListener('click', shareResults);
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // Load saved data from localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('mathQuizData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                bestStreak = data.bestStreak || 0;
+                highestLevel = data.highestLevel || 0;
+                dailyChallengeProgress = data.dailyChallengeProgress || 0;
+                dailyChallengeCompleted = data.dailyChallengeCompleted || false;
+                darkMode = data.darkMode || false;
+                
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.checked = true;
+                }
+            }
+            
+            updateStats();
+        }
+
+        // Save data to localStorage
+        function saveToLocalStorage() {
+            const data = {
+                bestStreak,
+                highestLevel,
+                dailyChallengeProgress,
+                dailyChallengeCompleted,
+                darkMode
+            };
+            localStorage.setItem('mathQuizData', JSON.stringify(data));
+        }
+
+        // Initialize
+        loadFromLocalStorage();
+        showRandomMathFact();
+
+        function showRandomMathFact() {
+            const randomFact = mathFacts[Math.floor(Math.random() * mathFacts.length)];
+            funFact.innerHTML = `<strong>Fakta Menarik:</strong> ${randomFact}`;
+        }
 
         function clearCanvas() {
             if (ctx && canvas) {
@@ -754,6 +1310,7 @@
             hintsUsed = 0;
             failedAttempts = 0;
             levelTimes = [];
+            currentStreak = 0;
             
             switch(currentDifficulty) {
                 case 'easy':
@@ -774,8 +1331,21 @@
             statsContainer.style.display = 'block';
             
             initCanvas();
-            
+            startTimer();
             startLevel();
+        }
+
+        function startTimer() {
+            let seconds = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                seconds++;
+                timerDisplay.textContent = seconds;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
         }
 
         // Fungsi untuk memulai level
@@ -784,6 +1354,7 @@
             
             currentLevelDisplay.textContent = currentLevel;
             currentScoreDisplay.textContent = currentScore;
+            streakCount.textContent = currentStreak;
             answerInput.value = '';
             answerInput.style.borderColor = '#ddd';
             
@@ -817,11 +1388,11 @@
         function selectOption(e) {
             document.querySelectorAll('.option-btn').forEach(btn => {
                 btn.style.borderColor = '#ddd';
-                btn.style.backgroundColor = 'white';
+                btn.style.backgroundColor = darkMode ? '#16213e' : 'white';
             });
             
             e.target.style.borderColor = 'var(--primary)';
-            e.target.style.backgroundColor = 'var(--secondary)';
+            e.target.style.backgroundColor = darkMode ? '#1a1a2e' : 'var(--secondary)';
             
             answerInput.value = e.target.dataset.value;
         }
@@ -832,6 +1403,19 @@
             if (quizContainer.style.display === 'block') {
                 startLevel();
             }
+        }
+
+        function toggleTheme() {
+            darkMode = !darkMode;
+            document.body.classList.toggle('dark-mode');
+            darkModeToggle.checked = darkMode;
+            saveToLocalStorage();
+        }
+
+        function toggleDarkMode() {
+            darkMode = darkModeToggle.checked;
+            document.body.classList.toggle('dark-mode', darkMode);
+            saveToLocalStorage();
         }
 
         function checkAnswer() {
@@ -874,8 +1458,31 @@
 
                 let pointsEarned = Math.max(1, maxPoints - timePenalty);
                 
-                resultMessage.innerHTML = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}<br><b>Poin diperoleh: ${pointsEarned}</b>`;
+                // Bonus streak
+                if (currentStreak > 0 && currentStreak % 3 === 0) {
+                    const streakBonus = Math.floor(currentStreak / 3) * 5;
+                    pointsEarned += streakBonus;
+                    resultMessage.innerHTML = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}<br>Bonus streak: +${streakBonus}<br><b>Poin diperoleh: ${pointsEarned}</b>`;
+                } else {
+                    resultMessage.innerHTML = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}<br><b>Poin diperoleh: ${pointsEarned}</b>`;
+                }
+                
                 currentScore += pointsEarned;
+                currentStreak++;
+                if (currentStreak > bestStreak) {
+                    bestStreak = currentStreak;
+                }
+                
+                // Update daily challenge progress if applicable
+                if (currentQuestion.isDailyChallenge) {
+                    dailyChallengeProgress++;
+                    if (dailyChallengeProgress >= 5 && !dailyChallengeCompleted) {
+                        dailyChallengeCompleted = true;
+                        currentScore += 50; // Bonus for completing daily challenge
+                        resultMessage.innerHTML += `<br><br>🎉 Anda menyelesaikan Tantangan Harian! +50 poin bonus!`;
+                    }
+                    saveToLocalStorage();
+                }
 
             } else {
                 resultIcon.className = 'result-icon incorrect';
@@ -885,11 +1492,20 @@
                 
                 currentScore = Math.max(0, currentScore - 5);
                 failedAttempts++;
+                currentStreak = 0;
+            }
+            
+            // Update highest level
+            if (currentLevel > highestLevel) {
+                highestLevel = currentLevel;
             }
             
             currentScoreDisplay.textContent = currentScore;
+            streakCount.textContent = currentStreak;
             updateStats();
+            saveToLocalStorage();
             resultModal.style.display = 'flex';
+            stopTimer();
         }
 
         function showHint() {
@@ -915,6 +1531,7 @@
             if (currentLevel < 20) {
                 currentLevel++;
                 startLevel();
+                startTimer();
             } else {
                 quizCompleted();
             }
@@ -925,12 +1542,18 @@
             resultMessage.textContent = `Total poin Anda: ${currentScore}`;
             nextBtn.style.display = 'none';
             resultModal.style.display = 'flex';
+            
+            // Update leaderboard with user's score
+            leaderboardData[0].score = currentScore;
+            leaderboardData[0].level = currentLevel;
+            saveToLocalStorage();
         }
 
         function goHome() {
             resultModal.style.display = 'none';
             quizContainer.style.display = 'none';
             statsContainer.style.display = 'none';
+            stopTimer();
         }
 
         function updateStats() {
@@ -943,12 +1566,73 @@
             
             hintsUsedDisplay.textContent = hintsUsed;
             
+            bestStreakDisplay.textContent = bestStreak;
+            highestLevelDisplay.textContent = highestLevel;
+            
             if (levelTimes.length > 0) {
                 const avgTime = Math.round(levelTimes.reduce((a, b) => a + b, 0) / levelTimes.length);
                 speedStatDisplay.textContent = `${avgTime} detik/level`;
             } else {
                  speedStatDisplay.textContent = `-`;
             }
+        }
+
+        function showLeaderboard() {
+            // Sort leaderboard by score (descending)
+            const sortedLeaderboard = [...leaderboardData].sort((a, b) => b.score - a.score);
+            
+            leaderboardBody.innerHTML = '';
+            
+            sortedLeaderboard.forEach((user, index) => {
+                const row = document.createElement('tr');
+                if (user.name === "Anda") {
+                    row.classList.add('user-rank');
+                }
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${user.name}</td>
+                    <td>${user.score}</td>
+                    <td>${user.level}</td>
+                `;
+                
+                leaderboardBody.appendChild(row);
+            });
+            
+            leaderboardModal.style.display = 'flex';
+        }
+
+        function showDailyChallenge() {
+            challengeProgress.style.width = `${(dailyChallengeProgress / 5) * 100}%`;
+            challengeProgressText.textContent = dailyChallengeProgress;
+            dailyChallengeModal.style.display = 'flex';
+        }
+
+        function shareResults() {
+            const shareText = `Saya baru saja mencoba Matematika Kuis dan mendapatkan ${currentScore} poin di level ${currentLevel} (${currentDifficulty})! Coba tantang saya di sini!`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Hasil Matematika Kuis',
+                    text: shareText,
+                    url: window.location.href
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                    fallbackShare(shareText);
+                });
+            } else {
+                fallbackShare(shareText);
+            }
+        }
+
+        function fallbackShare(text) {
+            // Copy to clipboard
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Teks hasil telah disalin ke clipboard! Anda bisa membagikannya di media sosial.');
+            }).catch(err => {
+                console.error('Could not copy text: ', err);
+                prompt('Salin teks berikut untuk membagikan hasil Anda:', text);
+            });
         }
 
         // --- SISTEM PEMBUATAN SOAL BARU ---
@@ -1053,7 +1737,7 @@
                 const x = randInt(2, 10);
                 const a = randInt(2, 5), b = randInt(1, 10);
                 const c = a * x + b;
-                return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya." };
+                return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya.", isDailyChallenge: true };
             },
             () => {
                 const num = randInt(20, 50);
@@ -1069,7 +1753,7 @@
             () => {
                 const x = randInt(2, 5);
                 const c = randInt(1, 5);
-                return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan." };
+                return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", isDailyChallenge: true };
             },
             () => {
                 const base = randInt(2, 3);
@@ -1099,7 +1783,7 @@
             () => {
                 const a = randInt(1, 5), b = randInt(1, 5);
                 const sum = a + b, prod = a * b;
-                return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab." };
+                return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", isDailyChallenge: true };
             },
             () => ({ question: `Berapakah hasil dari integral ∫(2x) dx? (format: x^2+C)`, answer: "x^2+C", hint: "Gunakan aturan integral pangkat: ∫ax^n dx = (a/(n+1))x^(n+1) + C." })
         ];
