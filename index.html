@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematika Kuis</title>
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #f5f7ff;
+            --accent: #ff6b6b;
+            --text: #333;
+            --light-text: #666;
+            --background: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+            background-color: var(--background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .easy {
+            background-color: #6bce70;
+            color: white;
+        }
+
+        .medium {
+            background-color: #f0ad4e;
+            color: white;
+        }
+
+        .hard {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .extreme {
+            background-color: #5d3a9b;
+            color: white;
+        }
+
+        .settings-panel {
+            background-color: var(--background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .settings-title {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .settings-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .quiz-container {
+            display: none;
+            background-color: var(--background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .level-info {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .score-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .score {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .answer-field {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+
+        .answer-field:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .answer-options {
+            display: none;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background-color: var(--secondary);
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .hint-btn {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--light-text);
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hint-btn:hover {
+            color: var(--primary);
+        }
+
+        .submit-btn {
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #3a5bed;
+        }
+        
+        .clear-btn {
+            background-color: #6c757d;
+        }
+        .clear-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .scratch-pad {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            height: 200px;
+            width: 100%;
+            background-color: white;
+        }
+
+        .stats-container {
+            background-color: var(--background);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .stats-title {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--light-text);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .hint-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hint-content {
+            background-color: var(--background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+        }
+
+        .hint-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .hint-title {
+            color: var(--primary);
+            font-size: 1.3rem;
+        }
+
+        .close-hint {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .hint-text {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .hint-points {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .result-content {
+            background-color: var(--background);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .correct {
+            color: #6bce70;
+        }
+
+        .incorrect {
+            color: #d9534f;
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .result-message {
+            margin-bottom: 20px;
+            color: var(--light-text);
+        }
+
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .next-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .next-btn:hover {
+            background-color: #3a5bed;
+        }
+
+        .home-btn {
+            background-color: #eee;
+            color: var(--text);
+        }
+
+        .home-btn:hover {
+            background-color: #ddd;
+        }
+
+        @media (max-width: 768px) {
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .difficulty-btn {
+                width: 100%;
+            }
+
+            .answer-options {
+                grid-template-columns: 1fr;
+            }
+
+            .quiz-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .action-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .hint-btn {
+                order: -1;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Matematika Kuis</h1>
+            <p>Uji kemampuan matematika Anda dengan berbagai tingkat kesulitan!</p>
+        </header>
+
+        <div class="settings-panel">
+            <h2 class="settings-title">Pengaturan</h2>
+            <div class="settings-options">
+                <label>
+                    <span>Gunakan Opsi Jawaban:</span>
+                    <label class="switch">
+                        <input type="checkbox" id="useOptionsToggle">
+                        <span class="slider"></span>
+                    </label>
+                </label>
+            </div>
+        </div>
+
+        <div class="difficulty-selector">
+            <button class="difficulty-btn easy" data-difficulty="easy">Mudah</button>
+            <button class="difficulty-btn medium" data-difficulty="medium">Menengah</button>
+            <button class="difficulty-btn hard" data-difficulty="hard">Sulit</button>
+            <button class="difficulty-btn extreme" data-difficulty="extreme">Ekstrem</button>
+        </div>
+
+        <div class="quiz-container" id="quizContainer">
+            <div class="quiz-header">
+                <div class="level-info">
+                    Level <span id="currentLevel">1</span>/20 - 
+                    <span id="difficultyDisplay">Mudah</span>
+                </div>
+                <div class="score-container">
+                    <span>Poin:</span>
+                    <span class="score" id="currentScore">0</span>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <div class="question" id="questionText"></div>
+                
+                <input type="text" class="answer-field" id="answerInput" placeholder="Masukkan jawaban Anda...">
+                
+                <div class="answer-options" id="answerOptions">
+                    </div>
+            </div>
+
+            <div class="quiz-controls">
+                <button class="hint-btn" id="hintBtn">
+                    <span>💡</span> Tips (-5 poin)
+                </button>
+                <div class="action-buttons">
+                    <button class="submit-btn clear-btn" id="clearCanvasBtn">Bersihkan</button>
+                    <button class="submit-btn" id="submitBtn">Submit</button>
+                </div>
+            </div>
+
+            <div class="scratch-pad" id="scratchPad"></div>
+        </div>
+
+        <div class="stats-container" id="statsContainer">
+            <h2 class="stats-title">Statistik Permainan</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Waktu per Level</div>
+                    <div class="stat-value" id="timePerLevel">0 detik</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Percobaan Gagal</div>
+                    <div class="stat-value" id="failedAttempts">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Kecepatan</div>
+                    <div class="stat-value" id="speedStat">-</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tips Digunakan</div>
+                    <div class="stat-value" id="hintsUsed">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint-modal" id="hintModal">
+        <div class="hint-content">
+            <div class="hint-header">
+                <h3 class="hint-title">Tips Penyelesaian</h3>
+                <button class="close-hint" id="closeHint">&times;</button>
+            </div>
+            <div class="hint-text" id="hintText"></div>
+            <p>Anda akan kehilangan <span class="hint-points">5 poin</span> untuk melihat tips ini.</p>
+        </div>
+    </div>
+
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="result-icon correct" id="resultIcon">✓</div>
+            <h3 class="result-title" id="resultTitle">Jawaban Benar!</h3>
+            <p class="result-message" id="resultMessage">Anda mendapatkan 10 poin untuk jawaban ini.</p>
+            <div class="result-actions">
+                <button class="modal-btn home-btn" id="homeBtn">Beranda</button>
+                <button class="modal-btn next-btn" id="nextBtn">Level Berikutnya</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variabel global
+        let currentDifficulty = '';
+        let currentLevel = 1;
+        // === PERUBAHAN JS: Mengubah nilai awal variabel skor menjadi 0 ===
+        let currentScore = 0;
+        let useOptions = false;
+        let hintsUsed = 0;
+        let failedAttempts = 0;
+        let levelStartTime = 0;
+        let levelTimes = [];
+        let currentQuestion = {};
+        let canvas;
+        let ctx;
+
+        // Elemen DOM
+        const quizContainer = document.getElementById('quizContainer');
+        const difficultyDisplay = document.getElementById('difficultyDisplay');
+        const currentLevelDisplay = document.getElementById('currentLevel');
+        const currentScoreDisplay = document.getElementById('currentScore');
+        const questionText = document.getElementById('questionText');
+        const answerInput = document.getElementById('answerInput');
+        const answerOptions = document.getElementById('answerOptions');
+        const submitBtn = document.getElementById('submitBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const hintModal = document.getElementById('hintModal');
+        const hintText = document.getElementById('hintText');
+        const closeHint = document.getElementById('closeHint');
+        const resultModal = document.getElementById('resultModal');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultMessage = document.getElementById('resultMessage');
+        const homeBtn = document.getElementById('homeBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const statsContainer = document.getElementById('statsContainer');
+        const timePerLevelDisplay = document.getElementById('timePerLevel');
+        const failedAttemptsDisplay = document.getElementById('failedAttempts');
+        const speedStatDisplay = document.getElementById('speedStat');
+        const hintsUsedDisplay = document.getElementById('hintsUsed');
+        const scratchPad = document.getElementById('scratchPad');
+        const useOptionsToggle = document.getElementById('useOptionsToggle');
+        const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+
+        // Event Listeners
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', startQuiz);
+        });
+
+        submitBtn.addEventListener('click', checkAnswer);
+        hintBtn.addEventListener('click', showHint);
+        closeHint.addEventListener('click', () => hintModal.style.display = 'none');
+        homeBtn.addEventListener('click', goHome);
+        nextBtn.addEventListener('click', nextLevel);
+        useOptionsToggle.addEventListener('change', toggleAnswerOptions);
+        clearCanvasBtn.addEventListener('click', clearCanvas);
+
+        function clearCanvas() {
+            if (ctx && canvas) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function initCanvas() {
+            scratchPad.innerHTML = '';
+            canvas = document.createElement('canvas');
+            canvas.width = scratchPad.offsetWidth;
+            canvas.height = scratchPad.offsetHeight;
+            scratchPad.appendChild(canvas);
+            
+            ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleTouchEnd);
+            
+            function startDrawing(e) {
+                isDrawing = true;
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+                [lastX, lastY] = [e.offsetX, e.offsetY];
+            }
+            
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            function getTouchPos(canvasDom, touchEvent) {
+                const rect = canvasDom.getBoundingClientRect();
+                return {
+                    x: touchEvent.touches[0].clientX - rect.left,
+                    y: touchEvent.touches[0].clientY - rect.top
+                };
+            }
+            
+            function handleTouchStart(e) {
+                e.preventDefault();
+                const touchPos = getTouchPos(canvas, e);
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touchPos.x,
+                    clientY: touchPos.y
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
+            
+            function handleTouchMove(e) {
+                e.preventDefault();
+                const touchPos = getTouchPos(canvas, e);
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touchPos.x,
+                    clientY: touchPos.y
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
+            
+            function handleTouchEnd(e) {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent('mouseup', {});
+                canvas.dispatchEvent(mouseEvent);
+            }
+        }
+
+        // Fungsi untuk memulai kuis
+        function startQuiz(e) {
+            currentDifficulty = e.target.dataset.difficulty;
+            currentLevel = 1;
+            // === PERUBAHAN JS: Mengubah nilai reset skor menjadi 0 ===
+            currentScore = 0;
+            hintsUsed = 0;
+            failedAttempts = 0;
+            levelTimes = [];
+            
+            switch(currentDifficulty) {
+                case 'easy':
+                    difficultyDisplay.textContent = 'Mudah';
+                    break;
+                case 'medium':
+                    difficultyDisplay.textContent = 'Menengah';
+                    break;
+                case 'hard':
+                    difficultyDisplay.textContent = 'Sulit';
+                    break;
+                case 'extreme':
+                    difficultyDisplay.textContent = 'Ekstrem';
+                    break;
+            }
+            
+            quizContainer.style.display = 'block';
+            statsContainer.style.display = 'block';
+            
+            initCanvas();
+            
+            startLevel();
+        }
+
+        // Fungsi untuk memulai level
+        function startLevel() {
+            clearCanvas();
+            
+            currentLevelDisplay.textContent = currentLevel;
+            currentScoreDisplay.textContent = currentScore;
+            answerInput.value = '';
+            answerInput.style.borderColor = '#ddd';
+            
+            currentQuestion = generateQuestion(currentDifficulty, currentLevel);
+            questionText.textContent = currentQuestion.question;
+            
+            if (useOptions) {
+                answerInput.style.display = 'none';
+                answerOptions.style.display = 'grid';
+                
+                answerOptions.innerHTML = '';
+                
+                currentQuestion.options.forEach((option, index) => {
+                    const optionBtn = document.createElement('button');
+                    optionBtn.className = 'option-btn';
+                    optionBtn.textContent = option;
+                    optionBtn.dataset.value = option;
+                    optionBtn.addEventListener('click', selectOption);
+                    answerOptions.appendChild(optionBtn);
+                });
+            } else {
+                answerInput.style.display = 'block';
+                answerOptions.style.display = 'none';
+            }
+            
+            levelStartTime = Date.now();
+            
+            updateStats();
+        }
+
+        function selectOption(e) {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.style.borderColor = '#ddd';
+                btn.style.backgroundColor = 'white';
+            });
+            
+            e.target.style.borderColor = 'var(--primary)';
+            e.target.style.backgroundColor = 'var(--secondary)';
+            
+            answerInput.value = e.target.dataset.value;
+        }
+
+        function toggleAnswerOptions() {
+            useOptions = useOptionsToggle.checked;
+            
+            if (quizContainer.style.display === 'block') {
+                startLevel();
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim();
+            
+            if (!userAnswer) {
+                answerInput.style.borderColor = 'var(--accent)';
+                return;
+            }
+            
+            const timeSpent = Math.floor((Date.now() - levelStartTime) / 1000);
+            levelTimes.push(timeSpent);
+            
+            let isCorrect = false;
+            
+            if (!isNaN(userAnswer)) {
+                isCorrect = Math.abs(parseFloat(userAnswer) - parseFloat(currentQuestion.answer)) < 0.0001;
+            } else {
+                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toString().toLowerCase();
+            }
+            
+            showResult(isCorrect);
+        }
+
+        function showResult(isCorrect) {
+            if (isCorrect) {
+                resultIcon.className = 'result-icon correct';
+                resultIcon.textContent = '✓';
+                resultTitle.textContent = 'Jawaban Benar!';
+                
+                let pointsEarned = 10;
+                if (currentDifficulty === 'medium') pointsEarned = 15;
+                else if (currentDifficulty === 'hard') pointsEarned = 20;
+                else if (currentDifficulty === 'extreme') pointsEarned = 25;
+                
+                pointsEarned += Math.floor(currentLevel / 5);
+                
+                resultMessage.textContent = `Anda mendapatkan ${pointsEarned} poin untuk jawaban ini.`;
+                currentScore += pointsEarned;
+            } else {
+                resultIcon.className = 'result-icon incorrect';
+                resultIcon.textContent = '✗';
+                resultTitle.textContent = 'Jawaban Salah!';
+                resultMessage.textContent = `Jawaban yang benar adalah: ${currentQuestion.answer}`;
+                
+                currentScore = Math.max(0, currentScore - 5);
+                failedAttempts++;
+            }
+            
+            currentScoreDisplay.textContent = currentScore;
+            updateStats();
+            resultModal.style.display = 'flex';
+        }
+
+        function showHint() {
+            hintText.textContent = currentQuestion.hint;
+            hintModal.style.display = 'flex';
+            
+            closeHint.onclick = function() {
+                hintModal.style.display = 'none';
+                
+                if (!currentQuestion.hintUsed) {
+                    currentScore = Math.max(0, currentScore - 5);
+                    currentScoreDisplay.textContent = currentScore;
+                    hintsUsed++;
+                    updateStats();
+                    currentQuestion.hintUsed = true;
+                }
+            };
+        }
+
+        function nextLevel() {
+            resultModal.style.display = 'none';
+            
+            if (currentLevel < 20) {
+                currentLevel++;
+                startLevel();
+            } else {
+                quizCompleted();
+            }
+        }
+
+        function quizCompleted() {
+            resultTitle.textContent = 'Kuis Selesai!';
+            resultMessage.textContent = `Total poin Anda: ${currentScore}`;
+            nextBtn.style.display = 'none';
+            resultModal.style.display = 'flex';
+        }
+
+        function goHome() {
+            resultModal.style.display = 'none';
+            quizContainer.style.display = 'none';
+            statsContainer.style.display = 'none';
+        }
+
+        function updateStats() {
+            if (levelTimes.length > 0) {
+                const lastLevelTime = levelTimes[levelTimes.length - 1];
+                timePerLevelDisplay.textContent = `${lastLevelTime} detik`;
+            }
+            
+            failedAttemptsDisplay.textContent = failedAttempts;
+            
+            hintsUsedDisplay.textContent = hintsUsed;
+            
+            if (levelTimes.length > 0) {
+                const avgTime = Math.round(levelTimes.reduce((a, b) => a + b, 0) / levelTimes.length);
+                speedStatDisplay.textContent = `${avgTime} detik/level`;
+            } else {
+                 speedStatDisplay.textContent = `-`;
+            }
+        }
+
+        function generateQuestion(difficulty, level) {
+            let question = {};
+            const operationTypes = ['aritmatika', 'logika', 'cerita'];
+            const operationType = operationTypes[Math.floor(Math.random() * operationTypes.length)];
+            
+            const adjustedLevel = level / 20;
+            
+            if (operationType === 'aritmatika') {
+                question = generateMathQuestion(difficulty, adjustedLevel);
+            } else if (operationType === 'logika') {
+                question = generateLogicQuestion(difficulty, adjustedLevel);
+            } else {
+                question = generateWordProblem(difficulty, adjustedLevel);
+            }
+            
+            if (useOptions) {
+                question.options = generateOptions(question.answer, difficulty, adjustedLevel);
+            }
+            
+            return question;
+        }
+
+        function generateMathQuestion(difficulty, level) {
+            let a, b, c, operation, question, answer, hint;
+            
+            let baseRange = 10;
+            if (difficulty === 'medium') baseRange = 20;
+            else if (difficulty === 'hard') baseRange = 50;
+            else if (difficulty === 'extreme') baseRange = 100;
+            
+            baseRange = Math.floor(baseRange * (1 + level * 2));
+            
+            const operations = ['+', '-', '*', '/'];
+            if (difficulty === 'easy') {
+                operation = operations[Math.floor(Math.random() * 2)];
+            } else if (difficulty === 'medium') {
+                operation = operations[Math.floor(Math.random() * 3)];
+            } else {
+                operation = operations[Math.floor(Math.random() * operations.length)];
+            }
+            
+            a = Math.floor(Math.random() * baseRange) + 1;
+            b = Math.floor(Math.random() * baseRange) + 1;
+            
+            if (operation === '/') {
+                b = Math.floor(Math.random() * (baseRange/5)) + 1;
+                a = b * (Math.floor(Math.random() * 5) + 1);
+            }
+            
+            if (operation === '*' && level < 0.3) {
+                a = Math.floor(Math.random() * 10) + 1;
+                b = Math.floor(Math.random() * 10) + 1;
+            }
+            
+            switch(operation) {
+                case '+':
+                    answer = a + b;
+                    question = `Berapakah hasil dari ${a} + ${b}?`;
+                    hint = `Tambahkan ${a} dan ${b} bersama-sama.`;
+                    break;
+                case '-':
+                    if (a < b && difficulty === 'easy') [a, b] = [b, a];
+                    answer = a - b;
+                    question = `Berapakah hasil dari ${a} - ${b}?`;
+                    hint = `Kurangi ${b} dari ${a}.`;
+                    break;
+                case '*':
+                    answer = a * b;
+                    question = `Berapakah hasil dari ${a} × ${b}?`;
+                    hint = `Kalikan ${a} dengan ${b}.`;
+                    break;
+                case '/':
+                    answer = a / b;
+                    question = `Berapakah hasil dari ${a} ÷ ${b}?`;
+                    hint = `Bagikan ${a} dengan ${b}.`;
+                    break;
+            }
+            
+            if (difficulty === 'hard' || difficulty === 'extreme') {
+                c = Math.floor(Math.random() * baseRange) + 1;
+                const secondOperation = operations[Math.floor(Math.random() * 2)];
+                
+                switch(secondOperation) {
+                    case '+':
+                        answer += c;
+                        question = `Berapakah hasil dari (${a} ${operation} ${b}) + ${c}?`;
+                        hint += ` Kemudian tambahkan ${c} ke hasil sebelumnya.`;
+                        break;
+                    case '-':
+                        answer -= c;
+                        if (answer < 0 && difficulty !== 'extreme') {
+                            answer += 2*c;
+                            question = `Berapakah hasil dari (${a} ${operation} ${b}) + ${c}?`;
+                            hint += ` Kemudian tambahkan ${c} ke hasil sebelumnya.`;
+                        } else {
+                            question = `Berapakah hasil dari (${a} ${operation} ${b}) - ${c}?`;
+                            hint += ` Kemudian kurangi ${c} dari hasil sebelumnya.`;
+                        }
+                        break;
+                }
+            }
+            
+            if (difficulty === 'extreme' && level > 0.5) {
+                const thirdOperation = operations[Math.floor(Math.random() * 2)];
+                const d = Math.floor(Math.random() * baseRange) + 1;
+                
+                if (thirdOperation === '+') {
+                    answer += d;
+                    question = question.replace('?', `) + ${d}?`);
+                    hint += ` Terakhir, tambahkan ${d}.`;
+                } else {
+                    answer -= d;
+                    if (answer < 0) {
+                        answer += 2*d;
+                        question = question.replace('?', `) + ${d}?`);
+                        hint += ` Terakhir, tambahkan ${d}.`;
+                    } else {
+                        question = question.replace('?', `) - ${d}?`);
+                        hint += ` Terakhir, kurangi ${d}.`;
+                    }
+                }
+            }
+            
+            return { question, answer, hint };
+        }
+
+        function generateLogicQuestion(difficulty, level) {
+            const logicTypes = [
+                'angka_berurutan', 'angka_ganjil_genap', 'faktor', 
+                'kelipatan', 'prima', 'persegi_panjang', 'segitiga'
+            ];
+            
+            const type = logicTypes[Math.floor(Math.random() * logicTypes.length)];
+            let question, answer, hint;
+            
+            switch(type) {
+                case 'angka_berurutan':
+                    const start = Math.floor(Math.random() * 20) + 1;
+                    const step = Math.floor(Math.random() * 3) + 1;
+                    const missingPos = Math.floor(Math.random() * 3) + 2;
+                    let sequence = [];
+                    
+                    for (let i = 0; i < 5; i++) {
+                        sequence.push(start + i * step);
+                    }
+                    
+                    answer = sequence[missingPos];
+                    sequence[missingPos] = '?';
+                    question = `Lanjutkan urutan angka berikut: ${sequence.join(', ')}`;
+                    hint = `Perhatikan pola penambahan antara angka-angka sebelumnya.`;
+                    break;
+                    
+                case 'angka_ganjil_genap':
+                    const numbers = [];
+                    let oddEvenPattern = Math.random() > 0.5 ? 'ganjil' : 'genap';
+                    
+                    for (let i = 0; i < 4; i++) {
+                        let num;
+                        do {
+                            num = Math.floor(Math.random() * 20) + 1;
+                        } while (
+                            (oddEvenPattern === 'ganjil' && num % 2 === 0) || 
+                            (oddEvenPattern === 'genap' && num % 2 !== 0)
+                        );
+                        numbers.push(num);
+                    }
+                    
+                    let wrongNum;
+                    do {
+                        wrongNum = Math.floor(Math.random() * 20) + 1;
+                    } while (
+                        (oddEvenPattern === 'ganjil' && wrongNum % 2 !== 0) || 
+                        (oddEvenPattern === 'genap' && wrongNum % 2 === 0)
+                    );
+                    
+                    const insertPos = Math.floor(Math.random() * numbers.length);
+                    numbers.splice(insertPos, 0, wrongNum);
+                    answer = wrongNum;
+                    question = `Manakah angka yang tidak sesuai dalam deret ini: ${numbers.join(', ')}?`;
+                    hint = `Perhatikan apakah angka-angka tersebut ganjil atau genap.`;
+                    break;
+                    
+                case 'faktor':
+                    const num = Math.floor(Math.random() * 30) + 10;
+                    const factors = [];
+                    for (let i = 1; i <= num; i++) {
+                        if (num % i === 0) factors.push(i);
+                    }
+                    const nonFactors = [];
+                    while (nonFactors.length < 3) {
+                        const rand = Math.floor(Math.random() * num) + 1;
+                        if (!factors.includes(rand)) nonFactors.push(rand);
+                    }
+                    answer = nonFactors[Math.floor(Math.random() * nonFactors.length)];
+                    question = `Manakah dari angka berikut yang BUKAN faktor dari ${num}: ${[...factors.slice(0, 3), answer].join(', ')}?`;
+                    hint = `Faktor adalah angka yang dapat membagi ${num} tanpa sisa.`;
+                    break;
+                    
+                case 'kelipatan':
+                    const base = Math.floor(Math.random() * 5) + 2;
+                    const multiples = [];
+                    for (let i = 1; i <= 5; i++) {
+                        multiples.push(base * i);
+                    }
+                    const nonMultiples = [];
+                    while (nonMultiples.length < 3) {
+                        const rand = Math.floor(Math.random() * 25) + 1;
+                        if (rand % base !== 0) nonMultiples.push(rand);
+                    }
+                    answer = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
+                    question = `Manakah dari angka berikut yang BUKAN kelipatan dari ${base}: ${[...multiples.slice(0, 2), answer].join(', ')}?`;
+                    hint = `Kelipatan ${base} adalah angka yang bisa didapatkan dengan mengalikan ${base} dengan bilangan bulat.`;
+                    break;
+                    
+                case 'prima':
+                    const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
+                    const nonPrimes = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28];
+                    
+                    if (Math.random() > 0.5) {
+                        answer = nonPrimes[Math.floor(Math.random() * nonPrimes.length)];
+                        question = `Manakah dari angka berikut yang BUKAN bilangan prima: ${[...primes.slice(0, 3), answer].join(', ')}?`;
+                        hint = `Bilangan prima hanya memiliki dua faktor: 1 dan dirinya sendiri.`;
+                    } else {
+                        answer = primes[Math.floor(Math.random() * primes.length)];
+                        question = `Manakah dari angka berikut yang merupakan bilangan prima: ${[...nonPrimes.slice(0, 3), answer].join(', ')}?`;
+                        hint = `Bilangan prima hanya memiliki dua faktor: 1 dan dirinya sendiri.`;
+                    }
+                    break;
+                    
+                case 'persegi_panjang':
+                    const length = Math.floor(Math.random() * 5) + 3;
+                    const width = Math.floor(Math.random() * 5) + 3;
+                    const area = length * width;
+                    const perimeter = 2 * (length + width);
+                    
+                    if (Math.random() > 0.5) {
+                        answer = area;
+                        question = `Sebuah persegi panjang memiliki panjang ${length} cm dan lebar ${width} cm. Berapakah luasnya?`;
+                        hint = `Luas persegi panjang dihitung dengan rumus: panjang × lebar.`;
+                    } else {
+                        answer = perimeter;
+                        question = `Sebuah persegi panjang memiliki panjang ${length} cm dan lebar ${width} cm. Berapakah kelilingnya?`;
+                        hint = `Keliling persegi panjang dihitung dengan rumus: 2 × (panjang + lebar).`;
+                    }
+                    break;
+                    
+                case 'segitiga':
+                    const baseTri = Math.floor(Math.random() * 10) + 5;
+                    const height = Math.floor(Math.random() * 10) + 5;
+                    const areaTri = 0.5 * baseTri * height;
+                    
+                    answer = areaTri;
+                    question = `Sebuah segitiga memiliki alas ${baseTri} cm dan tinggi ${height} cm. Berapakah luasnya?`;
+                    hint = `Luas segitiga dihitung dengan rumus: 0.5 × alas × tinggi.`;
+                    break;
+            }
+            
+            if (level > 0.7) {
+                if (type === 'angka_berurutan') {
+                    const op = Math.random() > 0.5 ? '+' : '-';
+                    const num = Math.floor(Math.random() * 5) + 1;
+                    
+                    if (op === '+') {
+                        answer += num;
+                        question += ` Kemudian tambahkan ${num} ke angka yang hilang. Berapa hasilnya?`;
+                        hint += ` Setelah menemukan angka yang hilang, tambahkan ${num} ke angka tersebut.`;
+                    } else {
+                        answer -= num;
+                        question += ` Kemudian kurangi ${num} dari angka yang hilang. Berapa hasilnya?`;
+                        hint += ` Setelah menemukan angka yang hilang, kurangi ${num} dari angka tersebut.`;
+                    }
+                }
+            }
+            
+            return { question, answer, hint };
+        }
+
+        function generateWordProblem(difficulty, level) {
+            const problemTypes = ['belanja', 'usia', 'kecepatan', 'campuran', 'bagi_hasil'];
+            const type = problemTypes[Math.floor(Math.random() * problemTypes.length)];
+            
+            let question, answer, hint;
+            
+            switch(type) {
+                case 'belanja':
+                    const item1Price = Math.floor(Math.random() * 20) + 5;
+                    const item2Price = Math.floor(Math.random() * 30) + 10;
+                    const item3Price = Math.floor(Math.random() * 50) + 20;
+                    const money = Math.floor(Math.random() * 100) + 50;
+                    
+                    if (Math.random() > 0.5) {
+                        answer = item1Price + item2Price + item3Price;
+                        question = `Andi membeli 3 barang dengan harga Rp${item1Price}, Rp${item2Price}, dan Rp${item3Price}. Berapa total uang yang harus dibayar Andi?`;
+                        hint = `Jumlahkan harga ketiga barang tersebut.`;
+                        
+                        if (level > 0.5) {
+                            answer = money - answer;
+                            question = `Andi membeli 3 barang dengan harga Rp${item1Price}, Rp${item2Price}, dan Rp${item3Price}. Jika Andi membayar dengan uang Rp${money}, berapa kembaliannya?`;
+                            hint = `Jumlahkan harga ketiga barang, kemudian kurangi dari uang yang dibayarkan.`;
+                        }
+                    } else {
+                        answer = money - item1Price - item2Price;
+                        question = `Andi memiliki uang Rp${money}. Dia membeli dua barang seharga Rp${item1Price} dan Rp${item2Price}. Berapa sisa uang Andi?`;
+                        hint = `Kurangi jumlah harga dua barang dari uang yang dimiliki Andi.`;
+                    }
+                    break;
+                    
+                case 'usia':
+                    const currentYear = new Date().getFullYear();
+                    const birthYear = currentYear - (Math.floor(Math.random() * 30) + 10);
+                    const yearsLater = Math.floor(Math.random() * 10) + 5;
+                    
+                    if (Math.random() > 0.5) {
+                        answer = currentYear - birthYear;
+                        question = `Jika seseorang lahir pada tahun ${birthYear}, berapa usianya sekarang (tahun ${currentYear})?`;
+                        hint = `Kurangi tahun sekarang dengan tahun kelahiran.`;
+                        
+                        if (level > 0.5) {
+                            answer += yearsLater;
+                            question = `Jika seseorang lahir pada tahun ${birthYear}, berapa usianya pada tahun ${currentYear + yearsLater}?`;
+                            hint = `Hitung usia sekarang, kemudian tambahkan ${yearsLater} tahun.`;
+                        }
+                    } else {
+                        const age = currentYear - birthYear;
+                        answer = birthYear;
+                        question = `Jika seseorang berusia ${age} tahun pada tahun ${currentYear}, pada tahun berapa dia lahir?`;
+                        hint = `Kurangi tahun sekarang dengan usia.`;
+                    }
+                    break;
+                    
+                case 'kecepatan':
+                    const speed = Math.floor(Math.random() * 80) + 20;
+                    const time = Math.floor(Math.random() * 5) + 1;
+                    const distance = speed * time;
+                    
+                    if (Math.random() > 0.5) {
+                        answer = distance;
+                        question = `Sebuah mobil bergerak dengan kecepatan konstan ${speed} km/jam. Berapa jarak yang ditempuh dalam ${time} jam?`;
+                        hint = `Jarak = Kecepatan × Waktu.`;
+                        
+                        if (level > 0.7) {
+                            const newDistance = distance + Math.floor(Math.random() * 50) + 20;
+                            answer = newDistance / speed;
+                            question = `Sebuah mobil bergerak dengan kecepatan konstan ${speed} km/jam. Berapa waktu yang dibutuhkan untuk menempuh ${newDistance} km?`;
+                            hint = `Waktu = Jarak / Kecepatan.`;
+                        }
+                    } else {
+                        answer = speed;
+                        question = `Sebuah mobil menempuh ${distance} km dalam ${time} jam. Berapa kecepatan rata-rata mobil tersebut (dalam km/jam)?`;
+                        hint = `Kecepatan = Jarak / Waktu.`;
+                    }
+                    break;
+                    
+                case 'campuran':
+                    const liquidA = Math.floor(Math.random() * 10) + 5;
+                    const liquidB = Math.floor(Math.random() * 10) + 5;
+                    const total = liquidA + liquidB;
+                    const ratio = liquidA / liquidB;
+                    
+                    if (Math.random() > 0.5) {
+                        answer = total;
+                        question = `Jika Anda mencampur ${liquidA} liter cairan A dengan ${liquidB} liter cairan B, berapa total volume campuran?`;
+                        hint = `Jumlahkan volume kedua cairan.`;
+                        
+                        if (level > 0.6) {
+                            answer = ratio.toFixed(2);
+                            question = `Jika Anda mencampur ${liquidA} liter cairan A dengan ${liquidB} liter cairan B, berapa rasio cairan A terhadap cairan B (bulatkan 2 angka di belakang koma)?`;
+                            hint = `Rasio = Jumlah cairan A / Jumlah cairan B.`;
+                        }
+                    } else {
+                        const part = Math.random() > 0.5 ? 'A' : 'B';
+                        if (part === 'A') {
+                            answer = liquidA;
+                            question = `Sebuah campuran terdiri dari cairan A dan B dengan total ${total} liter. Jika cairan B sebanyak ${liquidB} liter, berapa liter cairan A?`;
+                            hint = `Kurangi total volume dengan volume cairan B.`;
+                        } else {
+                            answer = liquidB;
+                            question = `Sebuah campuran terdiri dari cairan A dan B dengan total ${total} liter. Jika cairan A sebanyak ${liquidA} liter, berapa liter cairan B?`;
+                            hint = `Kurangi total volume dengan volume cairan A.`;
+                        }
+                    }
+                    break;
+                    
+                case 'bagi_hasil':
+                    const totalAmount = Math.floor(Math.random() * 100) + 50;
+                    const people = Math.floor(Math.random() * 5) + 2;
+                    const share = totalAmount / people;
+                    
+                    if (Math.random() > 0.5) {
+                        answer = share.toFixed(2);
+                        question = `Sebuah hadiah sebesar Rp${totalAmount} akan dibagi rata kepada ${people} orang. Berapa rupiah yang diterima masing-masing orang?`;
+                        hint = `Bagikan total hadiah dengan jumlah orang.`;
+                        
+                        if (level > 0.8) {
+                            const extra = Math.floor(Math.random() * 20) + 5;
+                            answer = ((totalAmount - extra) / people).toFixed(2);
+                            question = `Sebuah hadiah sebesar Rp${totalAmount} akan dibagi rata kepada ${people} orang setelah dipotong biaya administrasi Rp${extra}. Berapa rupiah yang diterima masing-masing orang?`;
+                            hint = `Kurangi biaya administrasi dari total hadiah, kemudian bagikan dengan jumlah orang.`;
+                        }
+                    } else {
+                        answer = totalAmount;
+                        question = `Jika ${people} orang masing-masing menerima Rp${share.toFixed(2)}, berapa total hadiah yang dibagikan?`;
+                        hint = `Kalikan jumlah orang dengan bagian masing-masing.`;
+                    }
+                    break;
+            }
+            
+            return { question, answer, hint };
+        }
+
+        function generateOptions(correctAnswer, difficulty, level) {
+            const options = [correctAnswer];
+            const answerType = isNaN(correctAnswer) ? 'text' : 'number';
+            
+            if (answerType === 'number') {
+                const num = parseFloat(correctAnswer);
+                let range = 5;
+                
+                if (difficulty === 'medium') range = 10;
+                else if (difficulty === 'hard') range = 15;
+                else if (difficulty === 'extreme') range = 20;
+                
+                range = Math.floor(range * (1 + level));
+                
+                while (options.length < 4) {
+                    let option;
+                    const variation = Math.floor(Math.random() * range) + 1;
+                    
+                    if (Math.random() > 0.5) {
+                        option = num + variation;
+                    } else {
+                        option = num - variation;
+                    }
+                    
+                    if ((difficulty === 'easy' || difficulty === 'medium') && option < 0) {
+                        option = num + variation;
+                    }
+                    
+                    if (!options.includes(option) && option !== num) {
+                        options.push(option);
+                    }
+                }
+            } else {
+                const similarOptions = [
+                    correctAnswer.toString().split('').reverse().join(''),
+                    correctAnswer.toString().toUpperCase(),
+                    correctAnswer.toString().toLowerCase(),
+                    correctAnswer.toString().slice(0, -1),
+                    correctAnswer.toString() + 'x',
+                    correctAnswer.toString().replace(/a|e|i|o|u/gi, '')
+                ];
+                
+                while (options.length < 4) {
+                    const randomOption = similarOptions[Math.floor(Math.random() * similarOptions.length)];
+                    if (!options.includes(randomOption)) {
+                        options.push(randomOption);
+                    }
+                }
+            }
+            
+            return shuffleArray(options);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
