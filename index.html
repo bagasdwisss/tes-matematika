@@ -834,6 +834,58 @@
             animation: pulse 1.5s infinite;
         }
 
+        .fun-fact {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+            font-style: italic;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px; /* Sesuaikan tinggi minimum */
+        }
+
+        .dark-mode .fun-fact {
+            background-color: #1a1a2e;
+        }
+
+        .fun-fact-content {
+            position: relative;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fun-fact strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        /* Tambahkan ini di CSS */
+.fun-fact::before {
+    content: "💡";
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    opacity: 0.2;
+    font-size: 2rem;
+    z-index: 0;
+}
+
+.fun-fact:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dark-mode .fun-fact:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
@@ -1302,10 +1354,36 @@
         loadFromLocalStorage();
         showRandomMathFact();
 
-        function showRandomMathFact() {
-            const randomFact = mathFacts[Math.floor(Math.random() * mathFacts.length)];
-            funFact.innerHTML = `<strong>Fakta Menarik:</strong> ${randomFact}`;
-        }
+        // Fungsi untuk menampilkan fakta matematika acak
+function showRandomMathFact() {
+    const randomFact = mathFacts[Math.floor(Math.random() * mathFacts.length)];
+    const factElement = document.getElementById('funFact');
+    
+    // Tambahkan animasi fade out
+    factElement.style.opacity = '0';
+    factElement.style.transition = 'opacity 0.5s ease';
+    
+    setTimeout(() => {
+        factElement.innerHTML = `<div class="fun-fact-content"><strong>Fakta Menarik:</strong> ${randomFact}</div>`;
+        factElement.style.opacity = '1';
+    }, 500);
+}
+
+// Jalankan fungsi pertama kali saat halaman dimuat
+showRandomMathFact();
+
+// Set interval untuk mengganti fakta setiap 5 detik
+let factInterval = setInterval(showRandomMathFact, 5000);
+
+// Tambahkan juga ke bagian inisialisasi
+function initCanvas() {
+    // ... kode yang sudah ada ...
+    
+    // Hentikan interval sebelumnya jika ada
+    if (factInterval) clearInterval(factInterval);
+    // Mulai interval baru
+    factInterval = setInterval(showRandomMathFact, 5000);
+}
 
         function clearCanvas() {
             if (ctx && canvas) {
