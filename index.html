@@ -432,6 +432,7 @@
         .result-message {
             margin-bottom: 20px;
             color: var(--light-text);
+            line-height: 1.5;
         }
 
         .result-actions {
@@ -598,7 +599,7 @@
         <div class="result-content">
             <div class="result-icon correct" id="resultIcon">✓</div>
             <h3 class="result-title" id="resultTitle">Jawaban Benar!</h3>
-            <p class="result-message" id="resultMessage">Anda mendapatkan 10 poin untuk jawaban ini.</p>
+            <p class="result-message" id="resultMessage"></p>
             <div class="result-actions">
                 <button class="modal-btn home-btn" id="homeBtn">Beranda</button>
                 <button class="modal-btn next-btn" id="nextBtn">Level Berikutnya</button>
@@ -610,7 +611,6 @@
         // Variabel global
         let currentDifficulty = '';
         let currentLevel = 1;
-        // === PERUBAHAN JS: Mengubah nilai awal variabel skor menjadi 0 ===
         let currentScore = 0;
         let useOptions = false;
         let hintsUsed = 0;
@@ -750,7 +750,6 @@
         function startQuiz(e) {
             currentDifficulty = e.target.dataset.difficulty;
             currentLevel = 1;
-            // === PERUBAHAN JS: Mengubah nilai reset skor menjadi 0 ===
             currentScore = 0;
             hintsUsed = 0;
             failedAttempts = 0;
@@ -847,36 +846,42 @@
             levelTimes.push(timeSpent);
             
             let isCorrect = false;
-            
-            if (!isNaN(userAnswer)) {
-                isCorrect = Math.abs(parseFloat(userAnswer) - parseFloat(currentQuestion.answer)) < 0.0001;
+
+            // Toleransi untuk jawaban desimal
+            if (!isNaN(userAnswer) && typeof currentQuestion.answer === 'number') {
+                 isCorrect = Math.abs(parseFloat(userAnswer) - currentQuestion.answer) < 0.01;
             } else {
-                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toString().toLowerCase();
+                 isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toString().toLowerCase();
             }
             
-            showResult(isCorrect);
+            showResult(isCorrect, timeSpent);
         }
 
-        function showResult(isCorrect) {
+        function showResult(isCorrect, timeSpent) {
             if (isCorrect) {
                 resultIcon.className = 'result-icon correct';
                 resultIcon.textContent = '✓';
                 resultTitle.textContent = 'Jawaban Benar!';
                 
-                let pointsEarned = 10;
-                if (currentDifficulty === 'medium') pointsEarned = 15;
-                else if (currentDifficulty === 'hard') pointsEarned = 20;
-                else if (currentDifficulty === 'extreme') pointsEarned = 25;
+                let maxPoints = 10;
+                if (currentDifficulty === 'medium') maxPoints = 15;
+                else if (currentDifficulty === 'hard') maxPoints = 20;
+                else if (currentDifficulty === 'extreme') maxPoints = 25;
                 
-                pointsEarned += Math.floor(currentLevel / 5);
+                maxPoints += Math.floor(currentLevel / 4);
+
+                const timePenalty = Math.floor(timeSpent / 4);
+
+                let pointsEarned = Math.max(1, maxPoints - timePenalty);
                 
-                resultMessage.textContent = `Anda mendapatkan ${pointsEarned} poin untuk jawaban ini.`;
+                resultMessage.innerHTML = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}<br><b>Poin diperoleh: ${pointsEarned}</b>`;
                 currentScore += pointsEarned;
+
             } else {
                 resultIcon.className = 'result-icon incorrect';
                 resultIcon.textContent = '✗';
                 resultTitle.textContent = 'Jawaban Salah!';
-                resultMessage.textContent = `Jawaban yang benar adalah: ${currentQuestion.answer}`;
+                resultMessage.innerHTML = `Jawaban yang benar adalah: <b>${currentQuestion.answer}</b>`;
                 
                 currentScore = Math.max(0, currentScore - 5);
                 failedAttempts++;
@@ -946,464 +951,233 @@
             }
         }
 
-        function generateQuestion(difficulty, level) {
-            let question = {};
-            const operationTypes = ['aritmatika', 'logika', 'cerita'];
-            const operationType = operationTypes[Math.floor(Math.random() * operationTypes.length)];
-            
-            const adjustedLevel = level / 20;
-            
-            if (operationType === 'aritmatika') {
-                question = generateMathQuestion(difficulty, adjustedLevel);
-            } else if (operationType === 'logika') {
-                question = generateLogicQuestion(difficulty, adjustedLevel);
-            } else {
-                question = generateWordProblem(difficulty, adjustedLevel);
-            }
-            
-            if (useOptions) {
-                question.options = generateOptions(question.answer, difficulty, adjustedLevel);
-            }
-            
-            return question;
-        }
+        // --- SISTEM PEMBUATAN SOAL BARU ---
 
-        function generateMathQuestion(difficulty, level) {
-            let a, b, c, operation, question, answer, hint;
-            
-            let baseRange = 10;
-            if (difficulty === 'medium') baseRange = 20;
-            else if (difficulty === 'hard') baseRange = 50;
-            else if (difficulty === 'extreme') baseRange = 100;
-            
-            baseRange = Math.floor(baseRange * (1 + level * 2));
-            
-            const operations = ['+', '-', '*', '/'];
-            if (difficulty === 'easy') {
-                operation = operations[Math.floor(Math.random() * 2)];
-            } else if (difficulty === 'medium') {
-                operation = operations[Math.floor(Math.random() * 3)];
-            } else {
-                operation = operations[Math.floor(Math.random() * operations.length)];
-            }
-            
-            a = Math.floor(Math.random() * baseRange) + 1;
-            b = Math.floor(Math.random() * baseRange) + 1;
-            
-            if (operation === '/') {
-                b = Math.floor(Math.random() * (baseRange/5)) + 1;
-                a = b * (Math.floor(Math.random() * 5) + 1);
-            }
-            
-            if (operation === '*' && level < 0.3) {
-                a = Math.floor(Math.random() * 10) + 1;
-                b = Math.floor(Math.random() * 10) + 1;
-            }
-            
-            switch(operation) {
-                case '+':
-                    answer = a + b;
-                    question = `Berapakah hasil dari ${a} + ${b}?`;
-                    hint = `Tambahkan ${a} dan ${b} bersama-sama.`;
-                    break;
-                case '-':
-                    if (a < b && difficulty === 'easy') [a, b] = [b, a];
-                    answer = a - b;
-                    question = `Berapakah hasil dari ${a} - ${b}?`;
-                    hint = `Kurangi ${b} dari ${a}.`;
-                    break;
-                case '*':
-                    answer = a * b;
-                    question = `Berapakah hasil dari ${a} × ${b}?`;
-                    hint = `Kalikan ${a} dengan ${b}.`;
-                    break;
-                case '/':
-                    answer = a / b;
-                    question = `Berapakah hasil dari ${a} ÷ ${b}?`;
-                    hint = `Bagikan ${a} dengan ${b}.`;
-                    break;
-            }
-            
-            if (difficulty === 'hard' || difficulty === 'extreme') {
-                c = Math.floor(Math.random() * baseRange) + 1;
-                const secondOperation = operations[Math.floor(Math.random() * 2)];
-                
-                switch(secondOperation) {
-                    case '+':
-                        answer += c;
-                        question = `Berapakah hasil dari (${a} ${operation} ${b}) + ${c}?`;
-                        hint += ` Kemudian tambahkan ${c} ke hasil sebelumnya.`;
-                        break;
-                    case '-':
-                        answer -= c;
-                        if (answer < 0 && difficulty !== 'extreme') {
-                            answer += 2*c;
-                            question = `Berapakah hasil dari (${a} ${operation} ${b}) + ${c}?`;
-                            hint += ` Kemudian tambahkan ${c} ke hasil sebelumnya.`;
-                        } else {
-                            question = `Berapakah hasil dari (${a} ${operation} ${b}) - ${c}?`;
-                            hint += ` Kemudian kurangi ${c} dari hasil sebelumnya.`;
-                        }
-                        break;
-                }
-            }
-            
-            if (difficulty === 'extreme' && level > 0.5) {
-                const thirdOperation = operations[Math.floor(Math.random() * 2)];
-                const d = Math.floor(Math.random() * baseRange) + 1;
-                
-                if (thirdOperation === '+') {
-                    answer += d;
-                    question = question.replace('?', `) + ${d}?`);
-                    hint += ` Terakhir, tambahkan ${d}.`;
+        // Fungsi pembantu
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        const getGcd = (a, b) => b === 0 ? a : getGcd(b, a % b);
+        const getLcm = (a, b) => (a * b) / getGcd(a, b);
+        
+        function getPrimeFactorization(num) {
+            const factors = {};
+            let divisor = 2;
+            while (num >= 2) {
+                if (num % divisor === 0) {
+                    factors[divisor] = (factors[divisor] || 0) + 1;
+                    num /= divisor;
                 } else {
-                    answer -= d;
-                    if (answer < 0) {
-                        answer += 2*d;
-                        question = question.replace('?', `) + ${d}?`);
-                        hint += ` Terakhir, tambahkan ${d}.`;
-                    } else {
-                        question = question.replace('?', `) - ${d}?`);
-                        hint += ` Terakhir, kurangi ${d}.`;
-                    }
+                    divisor++;
                 }
             }
-            
-            return { question, answer, hint };
+            return Object.entries(factors).map(([base, exp]) => exp > 1 ? `${base}^${exp}` : `${base}`).join(' × ');
         }
 
-        function generateLogicQuestion(difficulty, level) {
-            const logicTypes = [
-                'angka_berurutan', 'angka_ganjil_genap', 'faktor', 
-                'kelipatan', 'prima', 'persegi_panjang', 'segitiga'
-            ];
-            
-            const type = logicTypes[Math.floor(Math.random() * logicTypes.length)];
-            let question, answer, hint;
-            
-            switch(type) {
-                case 'angka_berurutan':
-                    const start = Math.floor(Math.random() * 20) + 1;
-                    const step = Math.floor(Math.random() * 3) + 1;
-                    const missingPos = Math.floor(Math.random() * 3) + 2;
-                    let sequence = [];
-                    
-                    for (let i = 0; i < 5; i++) {
-                        sequence.push(start + i * step);
-                    }
-                    
-                    answer = sequence[missingPos];
-                    sequence[missingPos] = '?';
-                    question = `Lanjutkan urutan angka berikut: ${sequence.join(', ')}`;
-                    hint = `Perhatikan pola penambahan antara angka-angka sebelumnya.`;
-                    break;
-                    
-                case 'angka_ganjil_genap':
-                    const numbers = [];
-                    let oddEvenPattern = Math.random() > 0.5 ? 'ganjil' : 'genap';
-                    
-                    for (let i = 0; i < 4; i++) {
-                        let num;
-                        do {
-                            num = Math.floor(Math.random() * 20) + 1;
-                        } while (
-                            (oddEvenPattern === 'ganjil' && num % 2 === 0) || 
-                            (oddEvenPattern === 'genap' && num % 2 !== 0)
-                        );
-                        numbers.push(num);
-                    }
-                    
-                    let wrongNum;
-                    do {
-                        wrongNum = Math.floor(Math.random() * 20) + 1;
-                    } while (
-                        (oddEvenPattern === 'ganjil' && wrongNum % 2 !== 0) || 
-                        (oddEvenPattern === 'genap' && wrongNum % 2 === 0)
-                    );
-                    
-                    const insertPos = Math.floor(Math.random() * numbers.length);
-                    numbers.splice(insertPos, 0, wrongNum);
-                    answer = wrongNum;
-                    question = `Manakah angka yang tidak sesuai dalam deret ini: ${numbers.join(', ')}?`;
-                    hint = `Perhatikan apakah angka-angka tersebut ganjil atau genap.`;
-                    break;
-                    
-                case 'faktor':
-                    const num = Math.floor(Math.random() * 30) + 10;
-                    const factors = [];
-                    for (let i = 1; i <= num; i++) {
-                        if (num % i === 0) factors.push(i);
-                    }
-                    const nonFactors = [];
-                    while (nonFactors.length < 3) {
-                        const rand = Math.floor(Math.random() * num) + 1;
-                        if (!factors.includes(rand)) nonFactors.push(rand);
-                    }
-                    answer = nonFactors[Math.floor(Math.random() * nonFactors.length)];
-                    question = `Manakah dari angka berikut yang BUKAN faktor dari ${num}: ${[...factors.slice(0, 3), answer].join(', ')}?`;
-                    hint = `Faktor adalah angka yang dapat membagi ${num} tanpa sisa.`;
-                    break;
-                    
-                case 'kelipatan':
-                    const base = Math.floor(Math.random() * 5) + 2;
-                    const multiples = [];
-                    for (let i = 1; i <= 5; i++) {
-                        multiples.push(base * i);
-                    }
-                    const nonMultiples = [];
-                    while (nonMultiples.length < 3) {
-                        const rand = Math.floor(Math.random() * 25) + 1;
-                        if (rand % base !== 0) nonMultiples.push(rand);
-                    }
-                    answer = nonMultiples[Math.floor(Math.random() * nonMultiples.length)];
-                    question = `Manakah dari angka berikut yang BUKAN kelipatan dari ${base}: ${[...multiples.slice(0, 2), answer].join(', ')}?`;
-                    hint = `Kelipatan ${base} adalah angka yang bisa didapatkan dengan mengalikan ${base} dengan bilangan bulat.`;
-                    break;
-                    
-                case 'prima':
-                    const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
-                    const nonPrimes = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28];
-                    
-                    if (Math.random() > 0.5) {
-                        answer = nonPrimes[Math.floor(Math.random() * nonPrimes.length)];
-                        question = `Manakah dari angka berikut yang BUKAN bilangan prima: ${[...primes.slice(0, 3), answer].join(', ')}?`;
-                        hint = `Bilangan prima hanya memiliki dua faktor: 1 dan dirinya sendiri.`;
-                    } else {
-                        answer = primes[Math.floor(Math.random() * primes.length)];
-                        question = `Manakah dari angka berikut yang merupakan bilangan prima: ${[...nonPrimes.slice(0, 3), answer].join(', ')}?`;
-                        hint = `Bilangan prima hanya memiliki dua faktor: 1 dan dirinya sendiri.`;
-                    }
-                    break;
-                    
-                case 'persegi_panjang':
-                    const length = Math.floor(Math.random() * 5) + 3;
-                    const width = Math.floor(Math.random() * 5) + 3;
-                    const area = length * width;
-                    const perimeter = 2 * (length + width);
-                    
-                    if (Math.random() > 0.5) {
-                        answer = area;
-                        question = `Sebuah persegi panjang memiliki panjang ${length} cm dan lebar ${width} cm. Berapakah luasnya?`;
-                        hint = `Luas persegi panjang dihitung dengan rumus: panjang × lebar.`;
-                    } else {
-                        answer = perimeter;
-                        question = `Sebuah persegi panjang memiliki panjang ${length} cm dan lebar ${width} cm. Berapakah kelilingnya?`;
-                        hint = `Keliling persegi panjang dihitung dengan rumus: 2 × (panjang + lebar).`;
-                    }
-                    break;
-                    
-                case 'segitiga':
-                    const baseTri = Math.floor(Math.random() * 10) + 5;
-                    const height = Math.floor(Math.random() * 10) + 5;
-                    const areaTri = 0.5 * baseTri * height;
-                    
-                    answer = areaTri;
-                    question = `Sebuah segitiga memiliki alas ${baseTri} cm dan tinggi ${height} cm. Berapakah luasnya?`;
-                    hint = `Luas segitiga dihitung dengan rumus: 0.5 × alas × tinggi.`;
-                    break;
+        // BANK SOAL TINGKAT MUDAH (EASY)
+        const easyQuestions = [
+            () => {
+                const a = randInt(10, 50);
+                const b = randInt(10, 50);
+                return { question: `Berapakah hasil dari ${a} + ${b}?`, answer: a + b, hint: "Jumlahkan kedua angka tersebut." };
+            },
+            () => {
+                const a = randInt(5, 15);
+                const b = randInt(2, 9);
+                return { question: `Berapakah hasil dari ${a} × ${b}?`, answer: a * b, hint: "Kalikan kedua angka tersebut." };
+            },
+            () => {
+                const den1 = 2, den2 = 4, num1 = 1, num2 = 1;
+                return { question: `Berapakah hasil dari 1/${den1} + 1/${den2}? (jawaban dalam desimal)`, answer: 0.75, hint: "Samakan penyebutnya terlebih dahulu." };
+            },
+            () => {
+                const numbers = [randInt(1, 5) * 2, randInt(1, 5) * 2 + 1, randInt(6, 10) * 2 + 1];
+                const answer = numbers[0];
+                return { question: `Manakah bilangan genap dari: ${shuffleArray(numbers).join(', ')}?`, answer, hint: "Bilangan genap adalah bilangan yang habis dibagi 2." };
+            },
+            () => {
+                const jam = randInt(1, 12);
+                const tambahan = randInt(2, 6);
+                const answer = (jam + tambahan) % 12 || 12;
+                return { question: `Jika sekarang jam ${jam}, jam berapakah ${tambahan} jam lagi?`, answer, hint: "Tambahkan jam sekarang dengan durasi waktu." };
+            },
+            () => ({ question: `1 kilometer sama dengan berapa meter?`, answer: 1000, hint: "Kilo berarti seribu." }),
+            () => {
+                const sisi = randInt(4, 10);
+                return { question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, answer: 4 * sisi, hint: "Keliling persegi adalah 4 kali panjang sisinya." };
+            },
+             () => {
+                const romanMap = {1:'I', 4:'IV', 5:'V', 9:'IX', 10:'X'};
+                const num = [1,4,5,9,10][randInt(0,4)];
+                return { question: `Angka romawi dari ${num} adalah?`, answer: romanMap[num], hint: 'Ingat kembali simbol dasar angka romawi.' };
             }
-            
-            if (level > 0.7) {
-                if (type === 'angka_berurutan') {
-                    const op = Math.random() > 0.5 ? '+' : '-';
-                    const num = Math.floor(Math.random() * 5) + 1;
-                    
-                    if (op === '+') {
-                        answer += num;
-                        question += ` Kemudian tambahkan ${num} ke angka yang hilang. Berapa hasilnya?`;
-                        hint += ` Setelah menemukan angka yang hilang, tambahkan ${num} ke angka tersebut.`;
-                    } else {
-                        answer -= num;
-                        question += ` Kemudian kurangi ${num} dari angka yang hilang. Berapa hasilnya?`;
-                        hint += ` Setelah menemukan angka yang hilang, kurangi ${num} dari angka tersebut.`;
-                    }
-                }
+        ];
+
+        // BANK SOAL TINGKAT SEDANG (MEDIUM)
+        const mediumQuestions = [
+            () => {
+                const a = randInt(5, 15), b = randInt(2, 5), c = randInt(3, 10);
+                return { question: `Berapakah hasil dari ${a} + ${b} × ${c}?`, answer: a + b * c, hint: "Kerjakan perkalian terlebih dahulu (aturan BODMAS/PEMDAS)." };
+            },
+            () => {
+                const a = randInt(20, 50), b = randInt(100, 200);
+                return { question: `${a}% dari ${b} adalah?`, answer: (a / 100) * b, hint: "Ubah persentase menjadi desimal (bagi 100), lalu kalikan." };
+            },
+            () => {
+                const a = randInt(4, 10), b = randInt(11, 20);
+                return { question: `KPK dari ${a} dan ${b} adalah?`, answer: getLcm(a, b), hint: "Kelipatan Persekutuan Terkecil." };
+            },
+            () => {
+                const x = randInt(2, 10), b = randInt(5, 15);
+                const c = x + b;
+                return { question: `Jika x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x." };
+            },
+            () => {
+                const a = randInt(-15, -5), b = randInt(6, 20);
+                return { question: `Berapakah hasil dari ${a} + ${b}?`, answer: a + b, hint: "Angka negatif ditambah positif sama dengan pengurangan." };
+            },
+            () => {
+                const arr = [randInt(2, 5), randInt(6, 10), randInt(11, 15)];
+                const answer = arr.reduce((sum, val) => sum + val, 0) / arr.length;
+                return { question: `Berapakah rata-rata dari ${arr.join(', ')}?`, answer: parseFloat(answer.toFixed(2)), hint: "Jumlahkan semua angka lalu bagi dengan banyaknya angka." };
+            },
+            () => {
+                const a = randInt(2, 6);
+                const b = randInt(2, 5);
+                return { question: `Berapakah hasil dari ${a}² + √${b*b}?`, answer: a * a + b, hint: "Hitung pangkat dan akar terlebih dahulu, baru jumlahkan." };
+            },
+            () => ({ question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, answer: "lancip", hint: "Lawan dari sudut tumpul." })
+        ];
+
+        // BANK SOAL TINGKAT SULIT (HARD)
+        const hardQuestions = [
+             () => {
+                const x = randInt(2, 10);
+                const a = randInt(2, 5), b = randInt(1, 10);
+                const c = a * x + b;
+                return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya." };
+            },
+            () => {
+                const num = randInt(20, 50);
+                return { question: `Faktor prima dari ${num} adalah? (contoh: 2 x 3^2)`, answer: getPrimeFactorization(num), hint: "Bagi terus bilangan dengan bilangan prima terkecil." };
+            },
+            () => {
+                const sisi = randInt(3, 7);
+                return { question: `Volume sebuah kubus dengan panjang rusuk ${sisi} cm adalah? (cm³)?`, answer: sisi * sisi * sisi, hint: "Volume kubus adalah rusuk pangkat tiga." };
+            },
+            () => {
+                return { question: `Berapakah peluang munculnya angka genap pada lemparan sebuah dadu? (jawaban dalam desimal)`, answer: 0.5, hint: "Jumlah sisi genap dibagi total sisi." };
+            },
+            () => {
+                const x = randInt(2, 5);
+                const c = randInt(1, 5);
+                return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan." };
+            },
+            () => {
+                const base = randInt(2, 3);
+                const start = base * randInt(1, 3);
+                const sequence = [start, start * base, start * base * base, start * base * base * base];
+                return { question: `Lanjutkan deret berikut: ${sequence.slice(0,3).join(', ')}, ...`, answer: sequence[3], hint: "Perhatikan rasio perkalian antar suku." };
             }
+        ];
+
+        // BANK SOAL TINGKAT EKSTREM (EXTREME)
+        const extremeQuestions = [
+            () => ({ question: "Berapakah hasil dari sin(30°) + cos(60°)? (dalam desimal)", answer: 1, hint: "Gunakan nilai dari sudut-sudut istimewa trigonometri." }),
+            () => {
+                const a = randInt(2, 5), b = randInt(2, 5);
+                return { question: `Turunan dari f(x) = ${a}x² + ${b}x adalah? (format: 12x+3)`, answer: `${2 * a}x+${b}`, hint: "Gunakan aturan pangkat: d/dx(ax^n) = n*ax^(n-1)." };
+            },
+            () => {
+                const a = randInt(2, 4), b = randInt(3, 5);
+                return { question: `Jika 2^${a} × 2^${b} = 2^x, maka nilai x adalah?`, answer: a + b, hint: "Jika basisnya sama, pangkatnya dijumlahkan." };
+            },
+            () => {
+                const a = randInt(1, 5), b = randInt(1, 5), c = randInt(1, 5), d = randInt(1, 5);
+                const real = a + c;
+                const imag = b - d;
+                return { question: `Berapakah hasil dari (${a} + ${b}i) + (${c} - ${d}i)? (format: 5+3i)`, answer: `${real}+${imag}i`, hint: "Jumlahkan bagian riil dengan riil, dan imajiner dengan imajiner." };
+            },
+            () => {
+                const a = randInt(1, 5), b = randInt(1, 5);
+                const sum = a + b, prod = a * b;
+                return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab." };
+            },
+            () => ({ question: `Berapakah hasil dari integral ∫(2x) dx? (format: x^2+C)`, answer: "x^2+C", hint: "Gunakan aturan integral pangkat: ∫ax^n dx = (a/(n+1))x^(n+1) + C." })
+        ];
+
+        // Fungsi utama untuk generate soal
+        function generateQuestion(difficulty) {
+            let questionBank;
+            switch(difficulty) {
+                case 'easy':
+                    questionBank = easyQuestions;
+                    break;
+                case 'medium':
+                    questionBank = mediumQuestions;
+                    break;
+                case 'hard':
+                    questionBank = hardQuestions;
+                    break;
+                case 'extreme':
+                    questionBank = extremeQuestions;
+                    break;
+                default:
+                    questionBank = easyQuestions;
+            }
+
+            // Pilih fungsi pembuat soal secara acak dari bank soal
+            const questionGenerator = questionBank[Math.floor(Math.random() * questionBank.length)];
+            const generated = questionGenerator();
             
-            return { question, answer, hint };
+            // Generate opsi jawaban jika diperlukan
+            if (useOptions) {
+                generated.options = generateOptions(generated.answer);
+            }
+
+            return generated;
         }
 
-        function generateWordProblem(difficulty, level) {
-            const problemTypes = ['belanja', 'usia', 'kecepatan', 'campuran', 'bagi_hasil'];
-            const type = problemTypes[Math.floor(Math.random() * problemTypes.length)];
-            
-            let question, answer, hint;
-            
-            switch(type) {
-                case 'belanja':
-                    const item1Price = Math.floor(Math.random() * 20) + 5;
-                    const item2Price = Math.floor(Math.random() * 30) + 10;
-                    const item3Price = Math.floor(Math.random() * 50) + 20;
-                    const money = Math.floor(Math.random() * 100) + 50;
-                    
-                    if (Math.random() > 0.5) {
-                        answer = item1Price + item2Price + item3Price;
-                        question = `Andi membeli 3 barang dengan harga Rp${item1Price}, Rp${item2Price}, dan Rp${item3Price}. Berapa total uang yang harus dibayar Andi?`;
-                        hint = `Jumlahkan harga ketiga barang tersebut.`;
-                        
-                        if (level > 0.5) {
-                            answer = money - answer;
-                            question = `Andi membeli 3 barang dengan harga Rp${item1Price}, Rp${item2Price}, dan Rp${item3Price}. Jika Andi membayar dengan uang Rp${money}, berapa kembaliannya?`;
-                            hint = `Jumlahkan harga ketiga barang, kemudian kurangi dari uang yang dibayarkan.`;
-                        }
-                    } else {
-                        answer = money - item1Price - item2Price;
-                        question = `Andi memiliki uang Rp${money}. Dia membeli dua barang seharga Rp${item1Price} dan Rp${item2Price}. Berapa sisa uang Andi?`;
-                        hint = `Kurangi jumlah harga dua barang dari uang yang dimiliki Andi.`;
-                    }
-                    break;
-                    
-                case 'usia':
-                    const currentYear = new Date().getFullYear();
-                    const birthYear = currentYear - (Math.floor(Math.random() * 30) + 10);
-                    const yearsLater = Math.floor(Math.random() * 10) + 5;
-                    
-                    if (Math.random() > 0.5) {
-                        answer = currentYear - birthYear;
-                        question = `Jika seseorang lahir pada tahun ${birthYear}, berapa usianya sekarang (tahun ${currentYear})?`;
-                        hint = `Kurangi tahun sekarang dengan tahun kelahiran.`;
-                        
-                        if (level > 0.5) {
-                            answer += yearsLater;
-                            question = `Jika seseorang lahir pada tahun ${birthYear}, berapa usianya pada tahun ${currentYear + yearsLater}?`;
-                            hint = `Hitung usia sekarang, kemudian tambahkan ${yearsLater} tahun.`;
-                        }
-                    } else {
-                        const age = currentYear - birthYear;
-                        answer = birthYear;
-                        question = `Jika seseorang berusia ${age} tahun pada tahun ${currentYear}, pada tahun berapa dia lahir?`;
-                        hint = `Kurangi tahun sekarang dengan usia.`;
-                    }
-                    break;
-                    
-                case 'kecepatan':
-                    const speed = Math.floor(Math.random() * 80) + 20;
-                    const time = Math.floor(Math.random() * 5) + 1;
-                    const distance = speed * time;
-                    
-                    if (Math.random() > 0.5) {
-                        answer = distance;
-                        question = `Sebuah mobil bergerak dengan kecepatan konstan ${speed} km/jam. Berapa jarak yang ditempuh dalam ${time} jam?`;
-                        hint = `Jarak = Kecepatan × Waktu.`;
-                        
-                        if (level > 0.7) {
-                            const newDistance = distance + Math.floor(Math.random() * 50) + 20;
-                            answer = newDistance / speed;
-                            question = `Sebuah mobil bergerak dengan kecepatan konstan ${speed} km/jam. Berapa waktu yang dibutuhkan untuk menempuh ${newDistance} km?`;
-                            hint = `Waktu = Jarak / Kecepatan.`;
-                        }
-                    } else {
-                        answer = speed;
-                        question = `Sebuah mobil menempuh ${distance} km dalam ${time} jam. Berapa kecepatan rata-rata mobil tersebut (dalam km/jam)?`;
-                        hint = `Kecepatan = Jarak / Waktu.`;
-                    }
-                    break;
-                    
-                case 'campuran':
-                    const liquidA = Math.floor(Math.random() * 10) + 5;
-                    const liquidB = Math.floor(Math.random() * 10) + 5;
-                    const total = liquidA + liquidB;
-                    const ratio = liquidA / liquidB;
-                    
-                    if (Math.random() > 0.5) {
-                        answer = total;
-                        question = `Jika Anda mencampur ${liquidA} liter cairan A dengan ${liquidB} liter cairan B, berapa total volume campuran?`;
-                        hint = `Jumlahkan volume kedua cairan.`;
-                        
-                        if (level > 0.6) {
-                            answer = ratio.toFixed(2);
-                            question = `Jika Anda mencampur ${liquidA} liter cairan A dengan ${liquidB} liter cairan B, berapa rasio cairan A terhadap cairan B (bulatkan 2 angka di belakang koma)?`;
-                            hint = `Rasio = Jumlah cairan A / Jumlah cairan B.`;
-                        }
-                    } else {
-                        const part = Math.random() > 0.5 ? 'A' : 'B';
-                        if (part === 'A') {
-                            answer = liquidA;
-                            question = `Sebuah campuran terdiri dari cairan A dan B dengan total ${total} liter. Jika cairan B sebanyak ${liquidB} liter, berapa liter cairan A?`;
-                            hint = `Kurangi total volume dengan volume cairan B.`;
-                        } else {
-                            answer = liquidB;
-                            question = `Sebuah campuran terdiri dari cairan A dan B dengan total ${total} liter. Jika cairan A sebanyak ${liquidA} liter, berapa liter cairan B?`;
-                            hint = `Kurangi total volume dengan volume cairan A.`;
-                        }
-                    }
-                    break;
-                    
-                case 'bagi_hasil':
-                    const totalAmount = Math.floor(Math.random() * 100) + 50;
-                    const people = Math.floor(Math.random() * 5) + 2;
-                    const share = totalAmount / people;
-                    
-                    if (Math.random() > 0.5) {
-                        answer = share.toFixed(2);
-                        question = `Sebuah hadiah sebesar Rp${totalAmount} akan dibagi rata kepada ${people} orang. Berapa rupiah yang diterima masing-masing orang?`;
-                        hint = `Bagikan total hadiah dengan jumlah orang.`;
-                        
-                        if (level > 0.8) {
-                            const extra = Math.floor(Math.random() * 20) + 5;
-                            answer = ((totalAmount - extra) / people).toFixed(2);
-                            question = `Sebuah hadiah sebesar Rp${totalAmount} akan dibagi rata kepada ${people} orang setelah dipotong biaya administrasi Rp${extra}. Berapa rupiah yang diterima masing-masing orang?`;
-                            hint = `Kurangi biaya administrasi dari total hadiah, kemudian bagikan dengan jumlah orang.`;
-                        }
-                    } else {
-                        answer = totalAmount;
-                        question = `Jika ${people} orang masing-masing menerima Rp${share.toFixed(2)}, berapa total hadiah yang dibagikan?`;
-                        hint = `Kalikan jumlah orang dengan bagian masing-masing.`;
-                    }
-                    break;
-            }
-            
-            return { question, answer, hint };
-        }
-
-        function generateOptions(correctAnswer, difficulty, level) {
+        function generateOptions(correctAnswer) {
             const options = [correctAnswer];
-            const answerType = isNaN(correctAnswer) ? 'text' : 'number';
-            
+            const answerType = typeof correctAnswer;
+
             if (answerType === 'number') {
                 const num = parseFloat(correctAnswer);
-                let range = 5;
-                
-                if (difficulty === 'medium') range = 10;
-                else if (difficulty === 'hard') range = 15;
-                else if (difficulty === 'extreme') range = 20;
-                
-                range = Math.floor(range * (1 + level));
-                
+                let range = Math.max(5, Math.abs(num * 0.3));
+
                 while (options.length < 4) {
                     let option;
-                    const variation = Math.floor(Math.random() * range) + 1;
+                    const variation = (Math.random() * range) + 1;
                     
                     if (Math.random() > 0.5) {
                         option = num + variation;
                     } else {
                         option = num - variation;
                     }
+
+                    option = Math.max(0, option); // Opsi tidak negatif
+                    // Pembulatan agar opsi terlihat lebih rapi
+                    option = Math.round(option * 100) / 100;
                     
-                    if ((difficulty === 'easy' || difficulty === 'medium') && option < 0) {
-                        option = num + variation;
-                    }
-                    
-                    if (!options.includes(option) && option !== num) {
+                    if (!options.includes(option)) {
                         options.push(option);
                     }
                 }
-            } else {
-                const similarOptions = [
-                    correctAnswer.toString().split('').reverse().join(''),
-                    correctAnswer.toString().toUpperCase(),
-                    correctAnswer.toString().toLowerCase(),
-                    correctAnswer.toString().slice(0, -1),
-                    correctAnswer.toString() + 'x',
-                    correctAnswer.toString().replace(/a|e|i|o|u/gi, '')
-                ];
-                
-                while (options.length < 4) {
-                    const randomOption = similarOptions[Math.floor(Math.random() * similarOptions.length)];
-                    if (!options.includes(randomOption)) {
-                        options.push(randomOption);
+            } else { // Untuk jawaban teks
+                 const similarOptions = [
+                    correctAnswer.toString().split('').reverse().join(''), // Dibalik
+                    correctAnswer.toString().toUpperCase(), // Huruf besar semua
+                    "salah", // Opsi salah umum
+                 ];
+                 // Filter duplikat dan tambahkan ke opsi utama
+                 similarOptions.forEach(opt => {
+                    if(options.length < 4 && !options.includes(opt)){
+                        options.push(opt);
                     }
-                }
+                 });
+                 // Jika masih kurang, tambahkan opsi acak
+                 while(options.length < 4){
+                    options.push(`opsi ${options.length +1}`);
+                 }
             }
             
             return shuffleArray(options);
