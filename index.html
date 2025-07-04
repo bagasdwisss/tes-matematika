@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matematika Kuis</title>
+    <link rel="icon" type="image/x-icon" href="assets/iconnew.png" />
     <style>
         :root {
             --primary: #4a6bff;
@@ -241,7 +242,7 @@
             border-radius: var(--border-radius);
             font-size: 1.1rem;
             margin-bottom: 15px;
-            transition: border 0.3s;
+            transition: all 0.3s;
             background-color: var(--background);
             color: var(--text);
         }
@@ -255,6 +256,28 @@
         .answer-field:focus {
             border-color: var(--primary);
             outline: none;
+        }
+
+        .answer-field.correct {
+            border-color: var(--success);
+            animation: pulseCorrect 0.5s;
+        }
+
+        .answer-field.incorrect {
+            border-color: var(--danger);
+            animation: shake 0.5s;
+        }
+
+        @keyframes pulseCorrect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
 
         .answer-options {
@@ -350,11 +373,25 @@
             height: 200px;
             width: 100%;
             background-color: white;
+            position: relative;
         }
 
         .dark-mode .scratch-pad {
             border-color: #444;
             background-color: #16213e;
+        }
+
+        .scratch-texture {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, grey 1px, transparent 1px),
+                              linear-gradient(to bottom, grey 1px, transparent 1px);
         }
 
         .stats-container {
@@ -416,6 +453,13 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .hint-modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .hint-content {
@@ -426,6 +470,9 @@
             width: 90%;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: modalFadeIn 0.3s forwards;
         }
 
         .dark-mode .hint-content {
@@ -473,6 +520,13 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .result-content {
@@ -484,6 +538,9 @@
             text-align: center;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: modalFadeIn 0.3s forwards;
         }
 
         .dark-mode .result-content {
@@ -574,6 +631,11 @@
             justify-content: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         .timer-container {
@@ -617,6 +679,11 @@
             justify-content: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .leaderboard-btn:hover {
+            transform: scale(1.1);
         }
 
         .daily-challenge-btn {
@@ -636,6 +703,35 @@
             justify-content: center;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .daily-challenge-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .coin-shop-btn {
+            position: fixed;
+            bottom: 200px;
+            right: 20px;
+            background-color: #ffd700;
+            color: #333;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .coin-shop-btn:hover {
+            transform: scale(1.1);
         }
 
         .leaderboard-modal {
@@ -649,6 +745,13 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .leaderboard-modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .leaderboard-content {
@@ -660,6 +763,9 @@
             box-shadow: var(--shadow);
             max-height: 80vh;
             overflow-y: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: modalFadeIn 0.3s forwards;
         }
 
         .dark-mode .leaderboard-content {
@@ -755,6 +861,13 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .daily-challenge-modal.show {
+            display: flex;
+            opacity: 1;
         }
 
         .daily-challenge-content {
@@ -764,6 +877,9 @@
             max-width: 500px;
             width: 90%;
             box-shadow: var(--shadow);
+            transform: scale(0.9);
+            opacity: 0;
+            animation: modalFadeIn 0.3s forwards;
         }
 
         .dark-mode .daily-challenge-content {
@@ -817,7 +933,7 @@
             border-radius: var(--border-radius);
             background-color: var(--primary);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.5s ease;
         }
 
         .fun-fact {
@@ -971,6 +1087,237 @@
             margin-bottom: 5px;
         }
 
+        /* Coin Shop Styles */
+        .coin-shop-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .coin-shop-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .coin-shop-content {
+            background-color: var(--background);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            opacity: 0;
+            animation: modalFadeIn 0.3s forwards;
+        }
+
+        .dark-mode .coin-shop-content {
+            background-color: var(--dark-secondary);
+        }
+
+        .coin-shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .coin-shop-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .close-coin-shop {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light-text);
+        }
+
+        .coin-shop-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .coin-shop-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .coin-shop-tab.active {
+            border-bottom-color: var(--primary);
+            font-weight: bold;
+        }
+
+        .coin-shop-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .coin-shop-item {
+            background-color: var(--secondary);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .dark-mode .coin-shop-item {
+            background-color: #1a1a2e;
+        }
+
+        .coin-shop-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .coin-shop-item-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .coin-shop-item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .coin-shop-item-price {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .coin-shop-item-owned {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .coin-shop-item-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Power-ups */
+        .power-ups-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .power-up-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .power-up-btn:hover {
+            background-color: #3a5bed;
+        }
+
+        .power-up-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Count Animation */
+        .count-up {
+            transition: color 0.3s;
+            display: inline-block;
+        }
+
+        .count-up.animate {
+            animation: countPop 0.5s;
+            color: #ffd700;
+        }
+
+        @keyframes countPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Modal Animation */
+        @keyframes modalFadeIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Story Problem Styles */
+        .story-problem {
+            background-color: var(--secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .dark-mode .story-problem {
+            background-color: #1a1a2e;
+        }
+
+        /* Scratch Pad Textures */
+        .texture-grid {
+            background-size: 20px 20px;
+            background-image: linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+        }
+
+        .texture-dots {
+            background-size: 10px 10px;
+            background-image: radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px);
+        }
+
+        .texture-lined {
+            background-size: 100% 24px;
+            background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+        }
+
+        /* Theme Preview */
+        .theme-preview {
+            width: 100%;
+            height: 60px;
+            border-radius: var(--border-radius);
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+
+        /* Responsive Styles */
         @media (max-width: 768px) {
             .difficulty-selector {
                 flex-direction: column;
@@ -1003,7 +1350,8 @@
 
             .theme-toggle, 
             .leaderboard-btn,
-            .daily-challenge-btn {
+            .daily-challenge-btn,
+            .coin-shop-btn {
                 width: 40px;
                 height: 40px;
                 font-size: 1rem;
@@ -1017,9 +1365,23 @@
                 bottom: 120px;
             }
 
+            .coin-shop-btn {
+                bottom: 170px;
+            }
+
             .achievement-popup {
                 width: calc(100% - 40px);
                 left: 20px;
+            }
+
+            .coin-shop-items {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .coin-shop-items {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -1095,7 +1457,10 @@
                 <div class="answer-options" id="answerOptions">
                 </div>
 
+                <div class="power-ups-container" id="powerUpsContainer">
+                    <!-- Power-ups will be added here dynamically -->
                 </div>
+            </div>
 
             <div class="quiz-controls">
                 <button class="hint-btn" id="hintBtn">
@@ -1107,7 +1472,9 @@
                 </div>
             </div>
 
-            <div class="scratch-pad" id="scratchPad"></div>
+            <div class="scratch-pad" id="scratchPad">
+                <div class="scratch-texture" id="scratchTexture"></div>
+            </div>
         </div>
 
         <div class="stats-container" id="statsContainer">
@@ -1252,9 +1619,33 @@
         </div>
     </div>
 
+    <div class="coin-shop-modal" id="coinShopModal">
+        <div class="coin-shop-content">
+            <div class="coin-shop-header">
+                <h3 class="coin-shop-title">Toko Koin <span class="coin-icon">🪙</span> <span id="shopCoinCount">0</span></h3>
+                <button class="close-coin-shop" id="closeCoinShop">&times;</button>
+            </div>
+            <div class="coin-shop-tabs">
+                <div class="coin-shop-tab active" data-tab="powerups">Power-ups</div>
+                <div class="coin-shop-tab" data-tab="themes">Tema</div>
+                <div class="coin-shop-tab" data-tab="textures">Tekstur</div>
+            </div>
+            <div class="coin-shop-items" id="powerupsTab">
+                <!-- Power-ups items will be added here dynamically -->
+            </div>
+            <div class="coin-shop-items" id="themesTab" style="display: none;">
+                <!-- Theme items will be added here dynamically -->
+            </div>
+            <div class="coin-shop-items" id="texturesTab" style="display: none;">
+                <!-- Texture items will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
     <button class="theme-toggle" id="themeToggle">🌓</button>
     <button class="leaderboard-btn" id="leaderboardBtn">🏆</button>
     <button class="daily-challenge-btn" id="dailyChallengeBtn">📅</button>
+    <button class="coin-shop-btn" id="coinShopBtn">🛒</button>
 
     <script>
         // Variabel global
@@ -1285,7 +1676,15 @@
         let speedRunTime = 0;
         let speedRunInterval;
         let factInterval;
-        let usedQuestions = new Set(); 
+        let usedQuestions = new Set();
+        let activePowerUps = [];
+        let ownedItems = {
+            powerups: {},
+            themes: {},
+            textures: {}
+        };
+        let currentTheme = 'default';
+        let currentTexture = 'grid';
 
         // Data achievement
         const achievements = [
@@ -1306,6 +1705,31 @@
             { name: "Pecinta Angka", score: 380, level: 18, coins: 95 },
             { name: "Ahli Aljabar", score: 320, level: 16, coins: 80 },
             { name: "Raja Geometri", score: 290, level: 15, coins: 75 }
+        ];
+
+        // Power-ups data
+        const powerUps = [
+            { id: 'removeTwo', name: 'Hilangkan 2 Opsi', icon: '❌', price: 30, description: 'Hilangkan 2 opsi jawaban yang salah', uses: 3 },
+            { id: 'showAnswer', name: 'Lihat Jawaban', icon: '👁️', price: 50, description: 'Tunjukkan jawaban yang benar', uses: 1 },
+            { id: 'timeFreeze', name: 'Bekukan Waktu', icon: '⏸️', price: 40, description: 'Hentikan timer selama 10 detik', uses: 2 },
+            { id: 'doublePoints', name: 'Poin Ganda', icon: '✖️2', price: 60, description: 'Dapatkan poin ganda untuk jawaban benar berikutnya', uses: 1 }
+        ];
+
+        // Theme data
+        const themes = [
+            { id: 'default', name: 'Standar', icon: '🎨', price: 0, description: 'Tema standar biru', colors: { primary: '#4a6bff', secondary: '#f5f7ff', accent: '#ff6b6b' } },
+            { id: 'dark', name: 'Gelap', icon: '🌑', price: 20, description: 'Tema gelap untuk mata', colors: { primary: '#6bce70', secondary: '#1a1a2e', accent: '#ff9500' } },
+            { id: 'sunset', name: 'Matahari Terbenam', icon: '🌇', price: 30, description: 'Nuansa oranye dan ungu', colors: { primary: '#ff7e5f', secondary: '#feb47b', accent: '#6a3093' } },
+            { id: 'ocean', name: 'Lautan', icon: '🌊', price: 25, description: 'Nuansa biru laut', colors: { primary: '#1e88e5', secondary: '#bbdefb', accent: '#ff5722' } },
+            { id: 'forest', name: 'Hutan', icon: '🌲', price: 35, description: 'Nuansa hijau alami', colors: { primary: '#2e7d32', secondary: '#c8e6c9', accent: '#ff8f00' } }
+        ];
+
+        // Texture data
+        const textures = [
+            { id: 'grid', name: 'Kotak-kotak', icon: '🔲', price: 0, description: 'Tekstur kotak-kotak standar', class: 'texture-grid' },
+            { id: 'dots', name: 'Titik-titik', icon: '🔵', price: 15, description: 'Tekstur titik-titik', class: 'texture-dots' },
+            { id: 'lined', name: 'Garis', icon: '📝', price: 20, description: 'Tekstur bergaris', class: 'texture-lined' },
+            { id: 'blank', name: 'Polos', icon: '⬜', price: 10, description: 'Tanpa tekstur', class: '' }
         ];
 
         // Fakta matematika acak
@@ -1434,6 +1858,7 @@
         const speedStatDisplay = document.getElementById('speedStat');
         const hintsUsedDisplay = document.getElementById('hintsUsed');
         const scratchPad = document.getElementById('scratchPad');
+        const scratchTexture = document.getElementById('scratchTexture');
         const useOptionsToggle = document.getElementById('useOptionsToggle');
         const clearCanvasBtn = document.getElementById('clearCanvasBtn');
         const themeToggle = document.getElementById('themeToggle');
@@ -1463,6 +1888,15 @@
         const algebraPercent = document.getElementById('algebraPercent');
         const geometryPercent = document.getElementById('geometryPercent');
         const arithmeticPercent = document.getElementById('arithmeticPercent');
+        const coinShopBtn = document.getElementById('coinShopBtn');
+        const coinShopModal = document.getElementById('coinShopModal');
+        const closeCoinShop = document.getElementById('closeCoinShop');
+        const shopCoinCount = document.getElementById('shopCoinCount');
+        const powerUpsContainer = document.getElementById('powerUpsContainer');
+        const powerupsTab = document.getElementById('powerupsTab');
+        const themesTab = document.getElementById('themesTab');
+        const texturesTab = document.getElementById('texturesTab');
+        const coinShopTabs = document.querySelectorAll('.coin-shop-tab');
 
         // Event Listeners
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -1475,18 +1909,33 @@
 
         submitBtn.addEventListener('click', checkAnswer);
         hintBtn.addEventListener('click', showHint);
-        closeHint.addEventListener('click', () => hintModal.style.display = 'none');
+        closeHint.addEventListener('click', () => hintModal.classList.remove('show'));
         homeBtn.addEventListener('click', goHome);
         nextBtn.addEventListener('click', nextLevel);
         useOptionsToggle.addEventListener('change', toggleAnswerOptions);
         clearCanvasBtn.addEventListener('click', clearCanvas);
         themeToggle.addEventListener('click', toggleTheme);
         leaderboardBtn.addEventListener('click', showLeaderboard);
-        closeLeaderboard.addEventListener('click', () => leaderboardModal.style.display = 'none');
+        closeLeaderboard.addEventListener('click', () => leaderboardModal.classList.remove('show'));
         dailyChallengeBtn.addEventListener('click', showDailyChallenge);
-        closeDailyChallenge.addEventListener('click', () => dailyChallengeModal.style.display = 'none');
+        closeDailyChallenge.addEventListener('click', () => dailyChallengeModal.classList.remove('show'));
         shareBtn.addEventListener('click', shareResults);
         darkModeToggle.addEventListener('change', toggleDarkMode);
+        coinShopBtn.addEventListener('click', showCoinShop);
+        closeCoinShop.addEventListener('click', () => coinShopModal.classList.remove('show'));
+        
+        coinShopTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                coinShopTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabId = tab.dataset.tab;
+                document.querySelectorAll('.coin-shop-items').forEach(content => {
+                    content.style.display = 'none';
+                });
+                document.getElementById(`${tabId}Tab`).style.display = 'grid';
+            });
+        });
 
         // Load saved data from localStorage
         function loadFromLocalStorage() {
@@ -1503,6 +1952,14 @@
                 algebraCorrect = data.algebraCorrect || 0;
                 geometryCorrect = data.geometryCorrect || 0;
                 arithmeticCorrect = data.arithmeticCorrect || 0;
+                currentTheme = data.currentTheme || 'default';
+                currentTexture = data.currentTexture || 'grid';
+                ownedItems = data.ownedItems || {
+                    powerups: {},
+                    themes: { default: 1 },
+                    textures: { grid: 1 }
+                };
+                
                 achievements.forEach(ach => {
                     const savedAch = data.achievements?.find(a => a.id === ach.id);
                     if (savedAch) ach.earned = savedAch.earned;
@@ -1512,12 +1969,16 @@
                     document.body.classList.add('dark-mode');
                     darkModeToggle.checked = true;
                 }
+                
+                applyTheme(currentTheme);
+                applyTexture(currentTexture);
             }
             
             updateStats();
             updateCoinDisplay();
             updateAchievementCount();
             updateSkillProgress();
+            initCoinShop();
         }
 
         // Save data to localStorage
@@ -1533,9 +1994,294 @@
                 algebraCorrect,
                 geometryCorrect,
                 arithmeticCorrect,
+                currentTheme,
+                currentTexture,
+                ownedItems,
                 achievements: achievements.filter(a => a.earned)
             };
             localStorage.setItem('mathQuizData', JSON.stringify(data));
+        }
+
+        // Initialize coin shop
+        function initCoinShop() {
+            // Add power-ups to shop
+            powerupsTab.innerHTML = '';
+            powerUps.forEach(powerup => {
+                const owned = ownedItems.powerups[powerup.id] || 0;
+                const canAfford = coins >= powerup.price;
+                
+                const item = document.createElement('div');
+                item.className = `coin-shop-item ${canAfford ? '' : 'coin-shop-item-disabled'}`;
+                item.innerHTML = `
+                    <div class="coin-shop-item-icon">${powerup.icon}</div>
+                    <div class="coin-shop-item-name">${powerup.name}</div>
+                    <div class="coin-shop-item-price">${powerup.price} 🪙</div>
+                    <small>${powerup.description}</small>
+                    ${owned > 0 ? `<div class="coin-shop-item-owned">${owned}</div>` : ''}
+                `;
+                
+                if (canAfford) {
+                    item.addEventListener('click', () => purchaseItem('powerups', powerup));
+                }
+                
+                powerupsTab.appendChild(item);
+            });
+            
+            // Add themes to shop
+            themesTab.innerHTML = '';
+            themes.forEach(theme => {
+                const owned = ownedItems.themes[theme.id] || 0;
+                const canAfford = coins >= theme.price || theme.price === 0;
+                const isCurrent = currentTheme === theme.id;
+                
+                const item = document.createElement('div');
+                item.className = `coin-shop-item ${canAfford ? '' : 'coin-shop-item-disabled'} ${isCurrent ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="coin-shop-item-icon">${theme.icon}</div>
+                    <div class="coin-shop-item-name">${theme.name}</div>
+                    <div class="coin-shop-item-price">${theme.price} 🪙</div>
+                    <small>${theme.description}</small>
+                    <div class="theme-preview" style="background: linear-gradient(to right, ${theme.colors.primary}, ${theme.colors.secondary});"></div>
+                    ${owned > 0 ? `<div class="coin-shop-item-owned">${owned}</div>` : ''}
+                    ${isCurrent ? '<div class="coin-shop-item-owned">✓</div>' : ''}
+                `;
+                
+                if (canAfford) {
+                    item.addEventListener('click', () => purchaseItem('themes', theme));
+                }
+                
+                themesTab.appendChild(item);
+            });
+            
+            // Add textures to shop
+            texturesTab.innerHTML = '';
+            textures.forEach(texture => {
+                const owned = ownedItems.textures[texture.id] || 0;
+                const canAfford = coins >= texture.price || texture.price === 0;
+                const isCurrent = currentTexture === texture.id;
+                
+                const item = document.createElement('div');
+                item.className = `coin-shop-item ${canAfford ? '' : 'coin-shop-item-disabled'} ${isCurrent ? 'active' : ''}`;
+                item.innerHTML = `
+                    <div class="coin-shop-item-icon">${texture.icon}</div>
+                    <div class="coin-shop-item-name">${texture.name}</div>
+                    <div class="coin-shop-item-price">${texture.price} 🪙</div>
+                    <small>${texture.description}</small>
+                    ${owned > 0 ? `<div class="coin-shop-item-owned">${owned}</div>` : ''}
+                    ${isCurrent ? '<div class="coin-shop-item-owned">✓</div>' : ''}
+                `;
+                
+                if (canAfford) {
+                    item.addEventListener('click', () => purchaseItem('textures', texture));
+                }
+                
+                texturesTab.appendChild(item);
+            });
+            
+            shopCoinCount.textContent = coins;
+        }
+
+        // Purchase item from coin shop
+        function purchaseItem(category, item) {
+            if (coins < item.price) return;
+            
+            coins -= item.price;
+            ownedItems[category][item.id] = (ownedItems[category][item.id] || 0) + 1;
+            
+            if (category === 'themes') {
+                currentTheme = item.id;
+                applyTheme(item.id);
+            } else if (category === 'textures') {
+                currentTexture = item.id;
+                applyTexture(item.id);
+            } else if (category === 'powerups') {
+                addPowerUp(item.id);
+            }
+            
+            updateCoinDisplay();
+            saveToLocalStorage();
+            initCoinShop();
+            
+            // Show purchase confirmation
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = `<h3>Pembelian Berhasil!</h3><p>Anda mendapatkan ${item.name}</p>`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        // Apply selected theme
+        function applyTheme(themeId) {
+            const theme = themes.find(t => t.id === themeId);
+            if (!theme) return;
+            
+            document.documentElement.style.setProperty('--primary', theme.colors.primary);
+            document.documentElement.style.setProperty('--secondary', theme.colors.secondary);
+            document.documentElement.style.setProperty('--accent', theme.colors.accent);
+        }
+
+        // Apply selected texture
+        function applyTexture(textureId) {
+            const texture = textures.find(t => t.id === textureId);
+            if (!texture) return;
+            
+            scratchTexture.className = 'scratch-texture ' + texture.class;
+        }
+
+        // Add power-up to active power-ups
+        function addPowerUp(powerupId) {
+            const powerup = powerUps.find(p => p.id === powerupId);
+            if (!powerup) return;
+            
+            // Initialize if not already owned
+            if (!ownedItems.powerups[powerupId]) {
+                ownedItems.powerups[powerupId] = {
+                    count: powerup.uses,
+                    max: powerup.uses
+                };
+            } else {
+                ownedItems.powerups[powerupId].count = Math.min(
+                    ownedItems.powerups[powerupId].count + powerup.uses,
+                    ownedItems.powerups[powerupId].max
+                );
+            }
+            
+            updatePowerUps();
+        }
+
+        // Update power-ups display
+        function updatePowerUps() {
+            powerUpsContainer.innerHTML = '';
+            
+            Object.keys(ownedItems.powerups).forEach(powerupId => {
+                const powerup = powerUps.find(p => p.id === powerupId);
+                if (!powerup) return;
+                
+                const powerupData = ownedItems.powerups[powerupId];
+                if (powerupData.count <= 0) return;
+                
+                const btn = document.createElement('button');
+                btn.className = 'power-up-btn';
+                btn.innerHTML = `${powerup.icon} ${powerup.name} (${powerupData.count})`;
+                btn.title = powerup.description;
+                btn.addEventListener('click', () => usePowerUp(powerupId));
+                
+                powerUpsContainer.appendChild(btn);
+            });
+        }
+
+        // Use power-up
+        function usePowerUp(powerupId) {
+            const powerup = powerUps.find(p => p.id === powerupId);
+            if (!powerup || !ownedItems.powerups[powerupId] || ownedItems.powerups[powerupId].count <= 0) return;
+            
+            ownedItems.powerups[powerupId].count--;
+            
+            switch(powerupId) {
+                case 'removeTwo':
+                    removeTwoOptions();
+                    break;
+                case 'showAnswer':
+                    showAnswer();
+                    break;
+                case 'timeFreeze':
+                    timeFreeze();
+                    break;
+                case 'doublePoints':
+                    activateDoublePoints();
+                    break;
+            }
+            
+            updatePowerUps();
+            saveToLocalStorage();
+        }
+
+        // Remove two incorrect options
+        function removeTwoOptions() {
+            if (!useOptions || !currentQuestion.options) return;
+            
+            const correctAnswer = currentQuestion.answer.toString();
+            const incorrectOptions = Array.from(document.querySelectorAll('.option-btn'))
+                .filter(btn => btn.dataset.value !== correctAnswer);
+            
+            if (incorrectOptions.length <= 2) return;
+            
+            // Shuffle and pick 2 to remove
+            const shuffled = [...incorrectOptions].sort(() => 0.5 - Math.random());
+            const toRemove = shuffled.slice(0, 2);
+            
+            toRemove.forEach(btn => {
+                btn.style.opacity = '0.3';
+                btn.style.pointerEvents = 'none';
+            });
+            
+            // Show message
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>2 opsi salah telah dihilangkan</p>';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        // Show correct answer
+        function showAnswer() {
+            const correctAnswer = currentQuestion.answer.toString();
+            
+            if (useOptions && currentQuestion.options) {
+                const correctBtn = Array.from(document.querySelectorAll('.option-btn'))
+                    .find(btn => btn.dataset.value === correctAnswer);
+                
+                if (correctBtn) {
+                    correctBtn.style.borderColor = 'var(--success)';
+                    correctBtn.style.backgroundColor = darkMode ? '#1a3a1a' : '#e6f7e6';
+                }
+            } else {
+                answerInput.value = correctAnswer;
+            }
+            
+            // Show message
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Jawaban yang benar ditunjukkan</p>';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        // Freeze timer for 10 seconds
+        function timeFreeze() {
+            if (!timerInterval) return;
+            
+            clearInterval(timerInterval);
+            
+            // Show message
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Waktu dibekukan selama 10 detik</p>';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+            
+            // Resume timer after 10 seconds
+            setTimeout(() => {
+                startTimer();
+            }, 10000);
+        }
+
+        // Activate double points for next correct answer
+        function activateDoublePoints() {
+            activePowerUps.push('doublePoints');
+            
+            // Show message
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Poin ganda aktif untuk jawaban berikutnya</p>';
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
+        }
+
+        // Show coin shop
+        function showCoinShop() {
+            shopCoinCount.textContent = coins;
+            coinShopModal.classList.add('show');
         }
 
         // Initialize
@@ -1553,6 +2299,10 @@
                 factElement.innerHTML = `<div class="fun-fact-content"><strong>Fakta Menarik:</strong> ${randomFact}</div>`;
                 factElement.style.opacity = '1';
             }, 500);
+            
+            // Change fact every 3 seconds
+            if (factInterval) clearInterval(factInterval);
+            factInterval = setInterval(showRandomMathFact, 3000);
         }
 
         function clearCanvas() {
@@ -1567,6 +2317,10 @@
             canvas.width = scratchPad.offsetWidth;
             canvas.height = scratchPad.offsetHeight;
             scratchPad.appendChild(canvas);
+            
+            const textureDiv = document.createElement('div');
+            textureDiv.className = 'scratch-texture ' + (textures.find(t => t.id === currentTexture)?.class || '');
+            scratchPad.appendChild(textureDiv);
             
             ctx = canvas.getContext('2d');
             ctx.strokeStyle = darkMode ? 'var(--dark-text)' : 'var(--text)';
@@ -1637,9 +2391,6 @@
                 const mouseEvent = new MouseEvent('mouseup', {});
                 canvas.dispatchEvent(mouseEvent);
             }
-
-            if (factInterval) clearInterval(factInterval);
-            factInterval = setInterval(showRandomMathFact, 5000);
         }
 
         function changeGameMode(e) {
@@ -1664,6 +2415,7 @@
             levelTimes = [];
             currentStreak = 0;
             speedRunTime = 0;
+            activePowerUps = [];
             
             switch(currentDifficulty) {
                 case 'easy':
@@ -1694,6 +2446,8 @@
                     speedRunTime++;
                 }, 1000);
             }
+            
+            updatePowerUps();
         }
 
         function startTimer() {
@@ -1714,10 +2468,10 @@
             clearCanvas();
             
             currentLevelDisplay.textContent = currentLevel;
-            currentScoreDisplay.textContent = currentScore;
+            animateCount(currentScoreDisplay, currentScore);
             streakCount.textContent = currentStreak;
             answerInput.value = '';
-            answerInput.style.borderColor = '#ddd';
+            answerInput.className = 'answer-field';
             
             currentQuestion = generateQuestion(currentDifficulty, currentLevel);
             questionText.textContent = currentQuestion.question;
@@ -1803,10 +2557,16 @@
                  isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toString().toLowerCase();
             }
             
-            showResult(isCorrect, timeSpent);
+            // Visual feedback
+            if (isCorrect) {
+                answerInput.classList.add('correct');
+            } else {
+                answerInput.classList.add('incorrect');
+            }
+            
+            setTimeout(() => showResult(isCorrect, timeSpent), 500);
         }
 
-        // --- MODIFIKASI DIMULAI DI SINI ---
         function showResult(isCorrect, timeSpent) {
             totalQuestionsAnswered++;
             let message = '';
@@ -1828,6 +2588,12 @@
                 maxPoints += Math.floor(currentLevel / 4);
                 const timePenalty = Math.floor(timeSpent / 4);
                 let pointsEarned = Math.max(1, maxPoints - timePenalty);
+                
+                // Apply double points if active
+                if (activePowerUps.includes('doublePoints')) {
+                    pointsEarned *= 2;
+                    activePowerUps = activePowerUps.filter(p => p !== 'doublePoints');
+                }
                 
                 message = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}`;
 
@@ -1854,7 +2620,8 @@
                 const coinsEarned = Math.floor(pointsEarned / 2);
                 coins += coinsEarned;
                 message += `<br><br>🪙 Koin diperoleh: +${coinsEarned}`;
-                updateCoinDisplay();
+                animateCount(coinCount, coins);
+                animateCount(totalCoinsDisplay, coins);
                 
                 if (currentQuestion.isDailyChallenge) {
                     dailyChallengeProgress++;
@@ -1863,7 +2630,8 @@
                         currentScore += 50;
                         coins += 25;
                         message += `<br><br>🎉 Anda menyelesaikan Tantangan Harian! +50 poin dan 25 koin bonus!`;
-                        updateCoinDisplay();
+                        animateCount(coinCount, coins);
+                        animateCount(totalCoinsDisplay, coins);
                     }
                     saveToLocalStorage();
                 }
@@ -1893,18 +2661,43 @@
                 highestLevel = currentLevel;
             }
             
-            currentScoreDisplay.textContent = currentScore;
+            animateCount(currentScoreDisplay, currentScore);
             streakCount.textContent = currentStreak;
             updateStats();
             saveToLocalStorage();
-            resultModal.style.display = 'flex';
+            resultModal.classList.add('show');
             stopTimer();
         }
-        // --- MODIFIKASI BERAKHIR DI SINI ---
+
+        function animateCount(element, targetValue) {
+            const current = parseInt(element.textContent) || 0;
+            const duration = 500; // ms
+            const startTime = performance.now();
+            
+            function updateCount(timestamp) {
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const value = Math.floor(current + (targetValue - current) * progress);
+                
+                element.textContent = value;
+                element.classList.add('animate');
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateCount);
+                } else {
+                    setTimeout(() => {
+                        element.classList.remove('animate');
+                    }, 300);
+                }
+            }
+            
+            requestAnimationFrame(updateCount);
+        }
 
         function updateCoinDisplay() {
             coinCount.textContent = coins;
             totalCoinsDisplay.textContent = coins;
+            if (shopCoinCount) shopCoinCount.textContent = coins;
         }
 
         function updateAchievementCount() {
@@ -1993,14 +2786,14 @@
 
         function showHint() {
             hintText.textContent = currentQuestion.hint;
-            hintModal.style.display = 'flex';
+            hintModal.classList.add('show');
             
             closeHint.onclick = function() {
-                hintModal.style.display = 'none';
+                hintModal.classList.remove('show');
                 
                 if (!currentQuestion.hintUsed) {
                     currentScore = Math.max(0, currentScore - 5);
-                    currentScoreDisplay.textContent = currentScore;
+                    animateCount(currentScoreDisplay, currentScore);
                     hintsUsed++;
                     updateStats();
                     currentQuestion.hintUsed = true;
@@ -2009,7 +2802,7 @@
         }
 
         function nextLevel() {
-            resultModal.style.display = 'none';
+            resultModal.classList.remove('show');
             
             if (currentLevel < 20) {
                 currentLevel++;
@@ -2030,7 +2823,7 @@
             resultTitle.textContent = 'Kuis Selesai!';
             resultMessage.textContent = `Total poin Anda: ${currentScore}`;
             nextBtn.style.display = 'none';
-            resultModal.style.display = 'flex';
+            resultModal.classList.add('show');
             
             leaderboardData[0].score = currentScore;
             leaderboardData[0].level = currentLevel;
@@ -2039,7 +2832,7 @@
         }
 
         function goHome() {
-            resultModal.style.display = 'none';
+            resultModal.classList.remove('show');
             quizContainer.style.display = 'none';
             statsContainer.style.display = 'none';
             stopTimer();
@@ -2088,13 +2881,13 @@
                 leaderboardBody.appendChild(row);
             });
             
-            leaderboardModal.style.display = 'flex';
+            leaderboardModal.classList.add('show');
         }
 
         function showDailyChallenge() {
             challengeProgress.style.width = `${(dailyChallengeProgress / 5) * 100}%`;
             challengeProgressText.textContent = dailyChallengeProgress;
-            dailyChallengeModal.style.display = 'flex';
+            dailyChallengeModal.classList.add('show');
         }
 
         function shareResults() {
@@ -2148,25 +2941,39 @@
             () => { const a = randInt(5, 15), b = randInt(2, 9); return { question: `Berapakah hasil dari ${a} × ${b}?`, answer: a * b, hint: "Kalikan kedua angka tersebut.", category: 'arithmetic', explanation: `Perkalian dasar: ${a} × ${b} = ${a * b}. Anda bisa menjumlahkan ${a} sebanyak ${b} kali.` }; },
             () => ({ question: `Berapakah hasil dari 1/2 + 1/4? (jawaban dalam desimal)`, answer: 0.75, hint: "Samakan penyebutnya terlebih dahulu.", category: 'arithmetic', explanation: `Untuk menjumlahkan pecahan, samakan penyebutnya. 1/2 = 2/4, jadi 2/4 + 1/4 = 3/4, yang sama dengan 0.75.` }),
             () => { const numbers = [randInt(1, 5) * 2, randInt(1, 5) * 2 + 1, randInt(6, 10) * 2 + 1]; const answer = numbers[0]; return { question: `Manakah bilangan genap dari: ${shuffleArray(numbers).join(', ')}?`, answer, hint: "Bilangan genap adalah bilangan yang habis dibagi 2.", category: 'arithmetic', explanation: `Bilangan genap adalah bilangan yang bisa dibagi 2 tanpa sisa. Dari pilihan yang ada, hanya ${answer} yang merupakan bilangan genap.` }; },
-            () => { const sisi = randInt(4, 10); return { question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, answer: 4 * sisi, hint: "Keliling persegi adalah 4 kali panjang sisinya.", category: 'geometry', explanation: `Rumus keliling persegi adalah 4 × sisi. Dengan sisi ${sisi} cm, kelilingnya adalah 4 × ${sisi} = ${4 * sisi} cm.` }; }
+            () => { const sisi = randInt(4, 10); return { question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, answer: 4 * sisi, hint: "Keliling persegi adalah 4 kali panjang sisinya.", category: 'geometry', explanation: `Rumus keliling persegi adalah 4 × sisi. Dengan sisi ${sisi} cm, kelilingnya adalah 4 × ${sisi} = ${4 * sisi} cm.` }; },
+            () => { const a = randInt(10, 20), b = randInt(5, 15); return { question: `Budi memiliki ${a} permen dan memberikan ${b} permen kepada adiknya. Berapa permen yang tersisa?`, answer: a - b, hint: "Kurangi jumlah permen yang diberikan dari total.", category: 'arithmetic', explanation: `Total permen awal adalah ${a}, setelah diberikan ${b}, sisa permen adalah ${a} - ${b} = ${a - b}.` }; },
+            () => { const price = randInt(5, 10) * 1000, quantity = randInt(2, 5); return { question: `Harga satu buku adalah Rp${price.toLocaleString('id-ID')}. Jika Andi membeli ${quantity} buku, berapa total yang harus dibayar?`, answer: price * quantity, hint: "Kalikan harga per buku dengan jumlah buku.", category: 'arithmetic', explanation: `Total harga = harga per buku × jumlah buku = Rp${price.toLocaleString('id-ID')} × ${quantity} = Rp${(price * quantity).toLocaleString('id-ID')}.` }; }
         ];
         const mediumQuestions = [
             () => { const a = randInt(5, 15), b = randInt(2, 5), c = randInt(3, 10); return { question: `Berapakah hasil dari ${a} + ${b} × ${c}?`, answer: a + b * c, hint: "Kerjakan perkalian terlebih dahulu (aturan BODMAS/PEMDAS).", category: 'arithmetic', explanation: `Menurut aturan operasi matematika, perkalian dikerjakan sebelum penjumlahan. Jadi, ${b} × ${c} = ${b * c}, lalu ${a} + ${b * c} = ${a + b * c}.` }; },
             () => { const a = randInt(20, 50), b = randInt(100, 200); return { question: `${a}% dari ${b} adalah?`, answer: (a / 100) * b, hint: "Ubah persentase menjadi desimal (bagi 100), lalu kalikan.", category: 'arithmetic', explanation: `Untuk menghitung persentase, ubah % menjadi desimal (${a}% = ${a/100}) lalu kalikan dengan bilangan: ${a/100} × ${b} = ${(a/100)*b}.` }; },
             () => { const x = randInt(2, 10), b = randInt(5, 15); const c = x + b; return { question: `Jika x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x.", category: 'algebra', explanation: `Untuk mencari x, kurangi kedua sisi dengan ${b}: x + ${b} - ${b} = ${c} - ${b}, sehingga x = ${x}.` }; },
-            () => ({ question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, answer: "lancip", hint: "Lawan dari sudut tumpul.", category: 'geometry', explanation: `Sudut diklasifikasikan berdasarkan besarnya: lancip (<90°), siku-siku (90°), tumpul (>90°), dan lurus (180°).` })
+            () => ({ question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, answer: "lancip", hint: "Lawan dari sudut tumpul.", category: 'geometry', explanation: `Sudut diklasifikasikan berdasarkan besarnya: lancip (<90°), siku-siku (90°), tumpul (>90°), dan lurus (180°).` }),
+            () => { const base = randInt(5, 10), height = randInt(5, 10); return { question: `Sebuah segitiga memiliki alas ${base} cm dan tinggi ${height} cm. Berapakah luasnya? (cm²)`, answer: (base * height) / 2, hint: "Rumus luas segitiga adalah (alas × tinggi) / 2.", category: 'geometry', explanation: `Luas segitiga = (alas × tinggi) / 2 = (${base} × ${height}) / 2 = ${(base * height) / 2} cm².` }; },
+            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `FPB dari ${a} dan ${b} adalah?`, answer: getGcd(a, b), hint: "Cari bilangan terbesar yang dapat membagi kedua angka.", category: 'arithmetic', explanation: `Faktor Persekutuan Terbesar (FPB) dari ${a} dan ${b} adalah ${getGcd(a, b)}.` }; },
+            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `KPK dari ${a} dan ${b} adalah?`, answer: getLcm(a, b), hint: "Cari bilangan terkecil yang dapat dibagi oleh kedua angka.", category: 'arithmetic', explanation: `Kelipatan Persekutuan Terkecil (KPK) dari ${a} dan ${b} adalah ${getLcm(a, b)}.` }; },
+            () => { const num = randInt(10, 30); return { question: `Faktorisasi prima dari ${num} adalah?`, answer: getPrimeFactorization(num), hint: "Bagi bilangan dengan bilangan prima terkecil hingga hasilnya 1.", category: 'arithmetic', explanation: `Faktorisasi prima dari ${num} adalah ${getPrimeFactorization(num)}.` }; }
         ];
         const hardQuestions = [
              () => { const x = randInt(2, 10), a = randInt(2, 5), b = randInt(1, 10); const c = a * x + b; return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya.", isDailyChallenge: true, category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${b}: ${a}x = ${c} - ${b} → ${a}x = ${a*x}. Lalu bagi kedua sisi dengan ${a}: x = ${a*x / a} → x = ${x}.` }; },
             () => { const sisi = randInt(3, 7); return { question: `Volume sebuah kubus dengan panjang rusuk ${sisi} cm adalah? (cm³)?`, answer: sisi * sisi * sisi, hint: "Volume kubus adalah rusuk pangkat tiga.", category: 'geometry', explanation: `Rumus volume kubus adalah sisi × sisi × sisi atau sisi³. Dengan rusuk ${sisi} cm, volumenya adalah ${sisi}³ = ${sisi*sisi*sisi} cm³.` }; },
             () => { return { question: `Berapakah peluang munculnya angka genap pada lemparan sebuah dadu? (jawaban dalam desimal)`, answer: 0.5, hint: "Jumlah sisi genap dibagi total sisi.", category: 'arithmetic', explanation: `Dadu memiliki 6 sisi (1,2,3,4,5,6). Sisi genap ada 3 (2,4,6). Peluang = (jumlah sisi genap) / (total sisi) = 3/6 = 0.5.` }; },
-            () => { const x = randInt(2, 5), c = randInt(1, 5); return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", isDailyChallenge: true, category: 'algebra', explanation: `Untuk mencari f(${x}), ganti setiap 'x' dalam fungsi f(x) = x² - ${c} dengan ${x}. Maka, f(${x}) = (${x})² - ${c} = ${x*x} - ${c} = ${x*x - c}.` }; }
+            () => { const x = randInt(2, 5), c = randInt(1, 5); return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", isDailyChallenge: true, category: 'algebra', explanation: `Untuk mencari f(${x}), ganti setiap 'x' dalam fungsi f(x) = x² - ${c} dengan ${x}. Maka, f(${x}) = (${x})² - ${c} = ${x*x} - ${c} = ${x*x - c}.` }; },
+            () => { const a = randInt(3, 6), b = randInt(3, 6); return { question: `Dalam segitiga siku-siku, jika sisi siku-sikunya ${a} cm dan ${b} cm, berapakah sisi miringnya? (cm)`, answer: Math.sqrt(a*a + b*b).toFixed(2), hint: "Gunakan teorema Pythagoras.", category: 'geometry', explanation: `Menurut teorema Pythagoras, sisi miring = √(sisi1² + sisi2²) = √(${a}² + ${b}²) = √(${a*a} + ${b*b}) = √${a*a + b*b} ≈ ${Math.sqrt(a*a + b*b).toFixed(2)} cm.` }; },
+            () => { const a = randInt(1, 5), b = randInt(1, 5); return { question: `Jika 2x + ${a} = ${b}, berapakah nilai x?`, answer: (b - a) / 2, hint: "Isolasi variabel x.", category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${a}: 2x = ${b} - ${a} → 2x = ${b - a}. Lalu bagi kedua sisi dengan 2: x = ${b - a} / 2 → x = ${(b - a) / 2}.` }; },
+            () => { const num = randInt(10, 20); return { question: `Berapakah hasil dari √${num * num}?`, answer: num, hint: "Akar kuadrat dari bilangan kuadrat sempurna adalah bilangan bulat.", category: 'arithmetic', explanation: `Karena ${num} × ${num} = ${num * num}, maka √${num * num} = ${num}.` }; },
+            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Jika ${a}x = ${b}x + ${a*b}, berapakah nilai x?`, answer: b, hint: "Kumpulkan semua suku x di satu sisi.", category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${b}x: ${a}x - ${b}x = ${a*b} → ${a - b}x = ${a*b}. Lalu bagi kedua sisi dengan ${a - b}: x = ${a*b} / ${a - b} → x = ${b}.` }; }
         ];
         const extremeQuestions = [
             () => ({ question: "Berapakah hasil dari sin(30°) + cos(60°)? (dalam desimal)", answer: 1, hint: "Gunakan nilai dari sudut-sudut istimewa trigonometri.", category: 'geometry', explanation: `Nilai sudut istimewa trigonometri adalah sin(30°) = 0.5 dan cos(60°) = 0.5. Jadi, 0.5 + 0.5 = 1.` }),
             () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Turunan dari f(x) = ${a}x² + ${b}x adalah? (format: 4x+2)`, answer: `${2 * a}x+${b}`, hint: "Gunakan aturan pangkat: d/dx(ax^n) = n*ax^(n-1).", category: 'algebra', explanation: `Menggunakan aturan turunan pangkat, turunan dari ${a}x² adalah 2 × ${a}x¹ = ${2*a}x. Turunan dari ${b}x adalah ${b}. Jadi, turunannya adalah ${2*a}x + ${b}.` }; },
             () => { const a = randInt(2, 4), b = randInt(3, 5); return { question: `Jika 2^${a} × 2^${b} = 2^x, maka nilai x adalah?`, answer: a + b, hint: "Jika basisnya sama, pangkatnya dijumlahkan.", category: 'algebra', explanation: `Menurut aturan eksponen, a^m × a^n = a^(m+n). Jadi, 2^${a} × 2^${b} = 2^(${a}+${b}). Maka, nilai x adalah ${a+b}.` }; },
-            () => { const a = randInt(1, 5), b = randInt(1, 5); const sum = a + b, prod = a * b; return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", isDailyChallenge: true, category: 'algebra', explanation: `Kita bisa menggunakan identitas aljabar (a+b)² = a² + b² + 2ab. Dengan mengubah urutannya, kita dapatkan a² + b² = (a+b)² - 2ab. Maka, a² + b² = (${sum})² - 2(${prod}) = ${sum*sum} - ${2*prod} = ${sum*sum - 2*prod}.` }; }
+            () => { const a = randInt(1, 5), b = randInt(1, 5); const sum = a + b, prod = a * b; return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", isDailyChallenge: true, category: 'algebra', explanation: `Kita bisa menggunakan identitas aljabar (a+b)² = a² + b² + 2ab. Dengan mengubah urutannya, kita dapatkan a² + b² = (a+b)² - 2ab. Maka, a² + b² = (${sum})² - 2(${prod}) = ${sum*sum} - ${2*prod} = ${sum*sum - 2*prod}.` }; },
+            () => { const a = randInt(3, 6), b = randInt(3, 6), c = randInt(1, 3); return { question: `Selesaikan persamaan kuadrat: x² - ${a + b}x + ${a * b} = 0`, answer: `${a},${b}`, hint: "Faktorkan persamaan kuadrat.", category: 'algebra', explanation: `Persamaan x² - ${a + b}x + ${a * b} = 0 dapat difaktorkan menjadi (x - ${a})(x - ${b}) = 0. Jadi solusinya adalah x = ${a} atau x = ${b}.` }; },
+            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Integral dari ${a}x + ${b} terhadap x adalah? (format: 2x^2+3x+C)`, answer: `${a/2}x^2+${b}x+C`, hint: "Gunakan aturan pangkat untuk integral.", category: 'algebra', explanation: `Integral dari ${a}x adalah ${a/2}x² dan integral dari ${b} adalah ${b}x. Jangan lupa tambahkan konstanta integrasi C.` }; },
+            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Logaritma basis ${a} dari ${Math.pow(a, b)} adalah?`, answer: b, hint: "Ingat definisi logaritma.", category: 'arithmetic', explanation: `Logaritma basis ${a} dari ${Math.pow(a, b)} adalah eksponen yang membuat ${a}^x = ${Math.pow(a, b)}, yaitu ${b}.` }; },
+            () => { const a = randInt(1, 3), b = randInt(1, 3); return { question: `Berapakah determinan dari matriks [[${a}, ${b}], [${b}, ${a}]]?`, answer: a*a - b*b, hint: "Determinan matriks 2x2 [[a,b],[c,d]] adalah ad - bc.", category: 'algebra', explanation: `Determinan dari [[${a}, ${b}], [${b}, ${a}]] adalah (${a} × ${a}) - (${b} × ${b}) = ${a*a} - ${b*b} = ${a*a - b*b}.` }; }
         ];
 
         function generateQuestion(difficulty) {
@@ -2183,9 +2990,7 @@
                 .filter(i => !usedQuestions.has(`${difficulty}-${i}`));
 
             if (availableIndices.length === 0) {
-                usedQuestions.forEach(q => {
-                    if (q.startsWith(difficulty + '-')) usedQuestions.delete(q);
-                });
+                usedQuestions.clear();
                 availableIndices = Array.from({length: questionBank.length}, (_, i) => i);
             }
 
@@ -2217,7 +3022,7 @@
             if (answerType === 'number') {
                 const num = parseFloat(correctAnswer);
                 let range = Math.max(5, Math.abs(num * 0.3));
-
+    
                 while (options.length < 4) {
                     let option = (Math.random() > 0.5) ? num + ((Math.random() * range) + 1) : num - ((Math.random() * range) + 1);
                     option = Math.max(0, Math.round(option * 100) / 100);
