@@ -1458,8 +1458,7 @@
                 </div>
 
                 <div class="power-ups-container" id="powerUpsContainer">
-                    <!-- Power-ups will be added here dynamically -->
-                </div>
+                    </div>
             </div>
 
             <div class="quiz-controls">
@@ -1631,14 +1630,11 @@
                 <div class="coin-shop-tab" data-tab="textures">Tekstur</div>
             </div>
             <div class="coin-shop-items" id="powerupsTab">
-                <!-- Power-ups items will be added here dynamically -->
-            </div>
+                </div>
             <div class="coin-shop-items" id="themesTab" style="display: none;">
-                <!-- Theme items will be added here dynamically -->
-            </div>
+                </div>
             <div class="coin-shop-items" id="texturesTab" style="display: none;">
-                <!-- Texture items will be added here dynamically -->
-            </div>
+                </div>
         </div>
     </div>
 
@@ -1676,7 +1672,7 @@
         let speedRunTime = 0;
         let speedRunInterval;
         let factInterval;
-        let usedQuestions = new Set();
+        let usedQuestions = new Set(); // Stores 'difficulty-index' to ensure unique questions per session
         let activePowerUps = [];
         let ownedItems = {
             powerups: {},
@@ -1828,7 +1824,7 @@
             "Bilangan imajiner (i, akar kuadrat dari -1) awalnya dianggap 'tidak mungkin' tetapi sekarang sangat penting dalam bidang teknik dan fisika.",
             "Sistem desimal modern (basis 10) berasal dari sistem angka Hindu-Arab.",
             "Teori Permainan (Game Theory) adalah cabang matematika yang digunakan dalam ekonomi, ilmu politik, dan biologi untuk memodelkan pengambilan keputusan strategis.",
-            "Dalam bahasa Prancis, angka 90 disebut 'quatre-vingt-dix' yang secara harfiah berarti 'empat-dua puluh-sepuluh' (4 x 20 + 10).",
+            "Dalam bahasa Prancis, angka 90 disebut 'quatre-vingt-dix' yang secara harfnis 'empat-dua puluh-sepuluh' (4 x 20 + 10).",
             "Selembar kertas yang sangat besar secara teoretis bisa dilipat hingga ke bulan, jika Anda bisa melipatnya 42 kali.",
             "Ada lebih banyak cara untuk mengatur catur di papan daripada jumlah elektron di alam semesta yang teramati (Nomor Shannon)."
         ];
@@ -2086,7 +2082,11 @@
             if (coins < item.price) return;
             
             coins -= item.price;
-            ownedItems[category][item.id] = (ownedItems[category][item.id] || 0) + 1;
+            if (category === 'powerups') {
+                 ownedItems[category][item.id] = (ownedItems[category][item.id] || 0) + item.uses; // Add uses directly
+            } else {
+                 ownedItems[category][item.id] = 1; // For themes/textures, just mark as owned
+            }
             
             if (category === 'themes') {
                 currentTheme = item.id;
@@ -2094,8 +2094,6 @@
             } else if (category === 'textures') {
                 currentTexture = item.id;
                 applyTexture(item.id);
-            } else if (category === 'powerups') {
-                addPowerUp(item.id);
             }
             
             updateCoinDisplay();
@@ -2133,17 +2131,10 @@
             const powerup = powerUps.find(p => p.id === powerupId);
             if (!powerup) return;
             
-            // Initialize if not already owned
             if (!ownedItems.powerups[powerupId]) {
-                ownedItems.powerups[powerupId] = {
-                    count: powerup.uses,
-                    max: powerup.uses
-                };
+                ownedItems.powerups[powerupId] = powerup.uses; // Store total uses
             } else {
-                ownedItems.powerups[powerupId].count = Math.min(
-                    ownedItems.powerups[powerupId].count + powerup.uses,
-                    ownedItems.powerups[powerupId].max
-                );
+                ownedItems.powerups[powerupId] += powerup.uses;
             }
             
             updatePowerUps();
@@ -2157,12 +2148,12 @@
                 const powerup = powerUps.find(p => p.id === powerupId);
                 if (!powerup) return;
                 
-                const powerupData = ownedItems.powerups[powerupId];
-                if (powerupData.count <= 0) return;
+                const uses = ownedItems.powerups[powerupId];
+                if (uses <= 0) return;
                 
                 const btn = document.createElement('button');
                 btn.className = 'power-up-btn';
-                btn.innerHTML = `${powerup.icon} ${powerup.name} (${powerupData.count})`;
+                btn.innerHTML = `${powerup.icon} ${powerup.name} (${uses})`;
                 btn.title = powerup.description;
                 btn.addEventListener('click', () => usePowerUp(powerupId));
                 
@@ -2173,9 +2164,9 @@
         // Use power-up
         function usePowerUp(powerupId) {
             const powerup = powerUps.find(p => p.id === powerupId);
-            if (!powerup || !ownedItems.powerups[powerupId] || ownedItems.powerups[powerupId].count <= 0) return;
+            if (!powerup || ownedItems.powerups[powerupId] <= 0) return;
             
-            ownedItems.powerups[powerupId].count--;
+            ownedItems.powerups[powerupId]--;
             
             switch(powerupId) {
                 case 'removeTwo':
@@ -2188,12 +2179,19 @@
                     timeFreeze();
                     break;
                 case 'doublePoints':
-                    activateDoublePoints();
+                    activePowerUps.push('doublePoints'); // Add to active power-ups for current question
                     break;
             }
             
             updatePowerUps();
             saveToLocalStorage();
+            
+            // Show message
+            const popup = document.createElement('div');
+            popup.className = 'achievement-popup';
+            popup.innerHTML = `<h3>Power-up Digunakan!</h3><p>${powerup.name} telah diaktifkan.</p>`;
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 2000);
         }
 
         // Remove two incorrect options
@@ -2201,26 +2199,20 @@
             if (!useOptions || !currentQuestion.options) return;
             
             const correctAnswer = currentQuestion.answer.toString();
-            const incorrectOptions = Array.from(document.querySelectorAll('.option-btn'))
-                .filter(btn => btn.dataset.value !== correctAnswer);
+            let incorrectOptions = Array.from(document.querySelectorAll('.option-btn'))
+                .filter(btn => btn.dataset.value !== correctAnswer && btn.style.opacity !== '0.3'); // Ensure not already removed
             
-            if (incorrectOptions.length <= 2) return;
+            if (incorrectOptions.length < 2) return; // Not enough incorrect options to remove
             
             // Shuffle and pick 2 to remove
-            const shuffled = [...incorrectOptions].sort(() => 0.5 - Math.random());
-            const toRemove = shuffled.slice(0, 2);
+            incorrectOptions = shuffleArray(incorrectOptions);
             
-            toRemove.forEach(btn => {
-                btn.style.opacity = '0.3';
-                btn.style.pointerEvents = 'none';
-            });
-            
-            // Show message
-            const popup = document.createElement('div');
-            popup.className = 'achievement-popup';
-            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>2 opsi salah telah dihilangkan</p>';
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 2000);
+            for (let i = 0; i < 2; i++) {
+                if (incorrectOptions[i]) {
+                    incorrectOptions[i].style.opacity = '0.3';
+                    incorrectOptions[i].style.pointerEvents = 'none';
+                }
+            }
         }
 
         // Show correct answer
@@ -2238,13 +2230,6 @@
             } else {
                 answerInput.value = correctAnswer;
             }
-            
-            // Show message
-            const popup = document.createElement('div');
-            popup.className = 'achievement-popup';
-            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Jawaban yang benar ditunjukkan</p>';
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 2000);
         }
 
         // Freeze timer for 10 seconds
@@ -2253,34 +2238,16 @@
             
             clearInterval(timerInterval);
             
-            // Show message
-            const popup = document.createElement('div');
-            popup.className = 'achievement-popup';
-            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Waktu dibekukan selama 10 detik</p>';
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 2000);
-            
             // Resume timer after 10 seconds
             setTimeout(() => {
                 startTimer();
             }, 10000);
         }
 
-        // Activate double points for next correct answer
-        function activateDoublePoints() {
-            activePowerUps.push('doublePoints');
-            
-            // Show message
-            const popup = document.createElement('div');
-            popup.className = 'achievement-popup';
-            popup.innerHTML = '<h3>Power-up Digunakan!</h3><p>Poin ganda aktif untuk jawaban berikutnya</p>';
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 2000);
-        }
-
         // Show coin shop
         function showCoinShop() {
             shopCoinCount.textContent = coins;
+            initCoinShop(); // Re-initialize to update owned status and affordability
             coinShopModal.classList.add('show');
         }
 
@@ -2415,7 +2382,8 @@
             levelTimes = [];
             currentStreak = 0;
             speedRunTime = 0;
-            activePowerUps = [];
+            activePowerUps = []; // Clear active power-ups at start of new quiz
+            usedQuestions.clear(); // Reset used questions for a new game session
             
             switch(currentDifficulty) {
                 case 'easy':
@@ -2473,7 +2441,7 @@
             answerInput.value = '';
             answerInput.className = 'answer-field';
             
-            currentQuestion = generateQuestion(currentDifficulty, currentLevel);
+            currentQuestion = generateQuestion(currentDifficulty); // Pass difficulty
             questionText.textContent = currentQuestion.question;
             
             if (useOptions) {
@@ -2592,7 +2560,8 @@
                 // Apply double points if active
                 if (activePowerUps.includes('doublePoints')) {
                     pointsEarned *= 2;
-                    activePowerUps = activePowerUps.filter(p => p !== 'doublePoints');
+                    activePowerUps = activePowerUps.filter(p => p !== 'doublePoints'); // Remove after one use
+                    message += `<br><b>(Poin Ganda Aktif!)</b>`;
                 }
                 
                 message = `Poin dasar: ${maxPoints}<br>Pengurangan waktu: -${timePenalty}`;
@@ -2706,9 +2675,10 @@
         }
 
         function updateSkillProgress() {
-            const algebraTotal = totalQuestionsAnswered > 0 ? Math.round((algebraCorrect / totalQuestionsAnswered) * 100) : 0;
-            const geometryTotal = totalQuestionsAnswered > 0 ? Math.round((geometryCorrect / totalQuestionsAnswered) * 100) : 0;
-            const arithmeticTotal = totalQuestionsAnswered > 0 ? Math.round((arithmeticCorrect / totalQuestionsAnswered) * 100) : 0;
+            const totalQuestions = algebraCorrect + geometryCorrect + arithmeticCorrect;
+            const algebraTotal = totalQuestions > 0 ? Math.round((algebraCorrect / totalQuestions) * 100) : 0;
+            const geometryTotal = totalQuestions > 0 ? Math.round((geometryCorrect / totalQuestions) * 100) : 0;
+            const arithmeticTotal = totalQuestions > 0 ? Math.round((arithmeticCorrect / totalQuestions) * 100) : 0;
             
             algebraProgress.style.width = `${algebraTotal}%`;
             geometryProgress.style.width = `${geometryTotal}%`;
@@ -2744,6 +2714,15 @@
                 showAchievement(3);
             }
             
+            // Check for 'Explorer' achievement: try all difficulties
+            const playedDifficulties = new Set(leaderboardData.slice(1).map(entry => entry.difficultyPlayed).filter(d => d));
+            if (!achievements[4].earned && playedDifficulties.size >= 4) { // Assuming 4 difficulties: easy, medium, hard, extreme
+                achievements[4].earned = true;
+                coins += achievements[4].reward;
+                showAchievement(4);
+            }
+
+
             if (coins >= 100 && !achievements[5].earned) {
                 achievements[5].earned = true;
                 coins += achievements[5].reward;
@@ -2828,6 +2807,8 @@
             leaderboardData[0].score = currentScore;
             leaderboardData[0].level = currentLevel;
             leaderboardData[0].coins = coins;
+            // For 'Explorer' achievement tracking
+            leaderboardData[0].difficultyPlayed = currentDifficulty; 
             saveToLocalStorage();
         }
 
@@ -2925,55 +2906,175 @@
         function getPrimeFactorization(num) {
             const factors = {};
             let divisor = 2;
-            while (num >= 2) {
-                if (num % divisor === 0) {
+            let n = num;
+            while (n >= 2) {
+                if (n % divisor === 0) {
                     factors[divisor] = (factors[divisor] || 0) + 1;
-                    num /= divisor;
+                    n /= divisor;
                 } else {
                     divisor++;
                 }
             }
+            if (Object.keys(factors).length === 0) return `${num}`; // For prime numbers themselves
             return Object.entries(factors).map(([base, exp]) => exp > 1 ? `${base}^${exp}` : `${base}`).join(' × ');
         }
 
+        function toFraction(decimal) {
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const tolerance = 1.0E-6;
+            let h1 = 1, h2 = 0;
+            let k1 = 0, k2 = 1;
+            let b = decimal;
+            do {
+                let a = Math.floor(b);
+                let aux = h1; h1 = a * h1 + h2; h2 = aux;
+                aux = k1; k1 = a * k1 + k2; k2 = aux;
+                b = 1 / (b - a);
+            } while (Math.abs(b - Math.floor(b)) > tolerance);
+            return `${h1}/${k1}`;
+        }
+
         const easyQuestions = [
-            () => ({ question: `Berapakah hasil dari ${randInt(10, 50)} + ${randInt(10, 50)}?`, answer: (a, b) => a + b, hint: "Jumlahkan kedua angka tersebut.", category: 'arithmetic', explanation: (q, a) => `Penjumlahan sederhana: ${q.split(' ')[4]} + ${q.split(' ')[6].replace('?','')} = ${a}. Anda cukup menambahkan kedua bilangan tersebut.` }),
-            () => { const a = randInt(5, 15), b = randInt(2, 9); return { question: `Berapakah hasil dari ${a} × ${b}?`, answer: a * b, hint: "Kalikan kedua angka tersebut.", category: 'arithmetic', explanation: `Perkalian dasar: ${a} × ${b} = ${a * b}. Anda bisa menjumlahkan ${a} sebanyak ${b} kali.` }; },
-            () => ({ question: `Berapakah hasil dari 1/2 + 1/4? (jawaban dalam desimal)`, answer: 0.75, hint: "Samakan penyebutnya terlebih dahulu.", category: 'arithmetic', explanation: `Untuk menjumlahkan pecahan, samakan penyebutnya. 1/2 = 2/4, jadi 2/4 + 1/4 = 3/4, yang sama dengan 0.75.` }),
-            () => { const numbers = [randInt(1, 5) * 2, randInt(1, 5) * 2 + 1, randInt(6, 10) * 2 + 1]; const answer = numbers[0]; return { question: `Manakah bilangan genap dari: ${shuffleArray(numbers).join(', ')}?`, answer, hint: "Bilangan genap adalah bilangan yang habis dibagi 2.", category: 'arithmetic', explanation: `Bilangan genap adalah bilangan yang bisa dibagi 2 tanpa sisa. Dari pilihan yang ada, hanya ${answer} yang merupakan bilangan genap.` }; },
-            () => { const sisi = randInt(4, 10); return { question: `Sebuah persegi memiliki sisi ${sisi} cm. Berapakah kelilingnya (cm)?`, answer: 4 * sisi, hint: "Keliling persegi adalah 4 kali panjang sisinya.", category: 'geometry', explanation: `Rumus keliling persegi adalah 4 × sisi. Dengan sisi ${sisi} cm, kelilingnya adalah 4 × ${sisi} = ${4 * sisi} cm.` }; },
-            () => { const a = randInt(10, 20), b = randInt(5, 15); return { question: `Budi memiliki ${a} permen dan memberikan ${b} permen kepada adiknya. Berapa permen yang tersisa?`, answer: a - b, hint: "Kurangi jumlah permen yang diberikan dari total.", category: 'arithmetic', explanation: `Total permen awal adalah ${a}, setelah diberikan ${b}, sisa permen adalah ${a} - ${b} = ${a - b}.` }; },
-            () => { const price = randInt(5, 10) * 1000, quantity = randInt(2, 5); return { question: `Harga satu buku adalah Rp${price.toLocaleString('id-ID')}. Jika Andi membeli ${quantity} buku, berapa total yang harus dibayar?`, answer: price * quantity, hint: "Kalikan harga per buku dengan jumlah buku.", category: 'arithmetic', explanation: `Total harga = harga per buku × jumlah buku = Rp${price.toLocaleString('id-ID')} × ${quantity} = Rp${(price * quantity).toLocaleString('id-ID')}.` }; }
+            // Penjumlahan dan pengurangan bilangan bulat
+            () => { const a = randInt(10, 50), b = randInt(10, 50); return { question: `Berapakah hasil dari ${a} + ${b}?`, answer: a + b, hint: "Jumlahkan kedua angka tersebut.", category: 'arithmetic', explanation: `Penjumlahan sederhana: ${a} + ${b} = ${a + b}.` }; },
+            () => { const a = randInt(50, 100), b = randInt(10, 40); return { question: `Berapakah hasil dari ${a} - ${b}?`, answer: a - b, hint: "Kurangkan bilangan kedua dari bilangan pertama.", category: 'arithmetic', explanation: `Pengurangan dasar: ${a} - ${b} = ${a - b}.` }; },
+            // Perkalian dan pembagian bilangan bulat
+            () => { const a = randInt(5, 15), b = randInt(2, 9); return { question: `Berapakah hasil dari ${a} × ${b}?`, answer: a * b, hint: "Kalikan kedua angka tersebut.", category: 'arithmetic', explanation: `Perkalian dasar: ${a} × ${b} = ${a * b}.` }; },
+            () => { const b = randInt(2, 8), a = b * randInt(5, 15); return { question: `Berapakah hasil dari ${a} ÷ ${b}?`, answer: a / b, hint: "Bagi bilangan pertama dengan bilangan kedua.", category: 'arithmetic', explanation: `Pembagian dasar: ${a} ÷ ${b} = ${a / b}.` }; },
+            // KPK dan FPB
+            () => { const a = randInt(6, 12), b = randInt(8, 15); return { question: `FPB dari ${a} dan ${b} adalah?`, answer: getGcd(a, b), hint: "Cari bilangan terbesar yang dapat membagi kedua angka.", category: 'arithmetic', explanation: `Faktor Persekutuan Terbesar (FPB) dari ${a} dan ${b} adalah ${getGcd(a, b)}.` }; },
+            () => { const a = randInt(4, 9), b = randInt(6, 12); return { question: `KPK dari ${a} dan ${b} adalah?`, answer: getLcm(a, b), hint: "Cari bilangan terkecil yang dapat dibagi oleh kedua angka.", category: 'arithmetic', explanation: `Kelipatan Persekutuan Terkecil (KPK) dari ${a} dan ${b} adalah ${getLcm(a, b)}.` }; },
+            // Pecahan (penjumlahan dan pengurangan)
+            () => { const den = randInt(4, 8) * 2; const num1 = randInt(1, den/2 - 1), num2 = randInt(1, den/2 - 1); return { question: `Berapakah hasil dari ${num1}/${den} + ${num2}/${den}? (format: a/b)`, answer: `${num1 + num2}/${den / getGcd(num1 + num2, den)}`, hint: "Jumlahkan pembilangnya, penyebut tetap sama. Sederhanakan jika perlu.", category: 'arithmetic', explanation: `Karena penyebutnya sama, cukup jumlahkan pembilangnya: ${num1} + ${num2} = ${num1 + num2}. Jadi, ${num1}/${den} + ${num2}/${den} = ${num1 + num2}/${den}. Sederhanakan pecahan jika memungkinkan.` }; },
+            () => { const den = randInt(4, 8) * 2; const num1 = randInt(den/2 + 1, den -1), num2 = randInt(1, den/2 - 1); return { question: `Berapakah hasil dari ${num1}/${den} - ${num2}/${den}? (format: a/b)`, answer: `${num1 - num2}/${den / getGcd(num1 - num2, den)}`, hint: "Kurangkan pembilangnya, penyebut tetap sama. Sederhanakan jika perlu.", category: 'arithmetic', explanation: `Karena penyebutnya sama, cukup kurangkan pembilangnya: ${num1} - ${num2} = ${num1 - num2}. Jadi, ${num1}/${den} - ${num2}/${den} = ${num1 - num2}/${den}. Sederhanakan pecahan jika memungkinkan.` }; },
+            // Desimal (konversi dan operasi dasar)
+            () => { const num = randInt(1, 9), den = [2, 4, 5, 8, 10][randInt(0, 4)]; return { question: `Berapakah bentuk desimal dari ${num}/${den}? (bulatkan 2 desimal)`, answer: (num / den).toFixed(2), hint: "Bagi pembilang dengan penyebut.", category: 'arithmetic', explanation: `Untuk mengubah pecahan ke desimal, bagi pembilang (${num}) dengan penyebut (${den}). ${num} ÷ ${den} = ${(num/den).toFixed(2)}.` }; },
+            () => { const d1 = randInt(1, 10) + randInt(1, 99) / 100; const d2 = randInt(1, 10) + randInt(1, 99) / 100; return { question: `Jumlah dari ${d1.toFixed(2)} dan ${d2.toFixed(2)} adalah?`, answer: (d1 + d2).toFixed(2), hint: "Jumlahkan bilangan desimal seperti bilangan bulat, sejajarkan koma.", category: 'arithmetic', explanation: `Jumlahkan ${d1.toFixed(2)} dan ${d2.toFixed(2)} dengan menyelaraskan titik desimal: ${d1.toFixed(2)} + ${d2.toFixed(2)} = ${(d1+d2).toFixed(2)}.` }; },
+            // Persentase
+            () => { const percent = randInt(10, 50), value = randInt(20, 100); return { question: `Berapakah ${percent}% dari ${value}?`, answer: (percent / 100 * value).toFixed(2), hint: "Ubah persentase menjadi desimal lalu kalikan.", category: 'arithmetic', explanation: `Untuk menghitung ${percent}% dari ${value}, ubah persentase menjadi desimal (${percent}/100 = ${percent/100}) lalu kalikan dengan ${value}: ${percent/100} × ${value} = ${(percent/100 * value).toFixed(2)}.` }; },
+            // Waktu dan jam
+            () => { const hours = randInt(1, 10), minutes = randInt(10, 50); return { question: `Jika sekarang pukul 08:30 dan Anda menambahkan ${hours} jam ${minutes} menit, jam berapa sekarang?`, answer: new Date(2000, 0, 1, 8 + hours, 30 + minutes).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }), hint: "Jumlahkan jam dan menit secara terpisah, ingat 60 menit = 1 jam.", category: 'arithmetic', explanation: `Tambahkan ${hours} jam ke 08:30 menjadi ${8+hours}:30. Lalu tambahkan ${minutes} menit ke 30 menit. Jika melebihi 60 menit, tambahkan 1 jam ke total jam dan kurangkan 60 dari menit.` }; },
+            // Pengukuran panjang, berat, dan volume
+            () => { const len1 = randInt(50, 150), len2 = randInt(20, 80); return { question: `Sebuah tali panjangnya ${len1} cm. Kemudian disambung lagi ${len2} cm. Berapa panjang total tali? (dalam meter)`, answer: ((len1 + len2) / 100).toFixed(2), hint: "Jumlahkan panjangnya, lalu ubah cm ke meter (100 cm = 1 meter).", category: 'arithmetic', explanation: `Total panjang tali dalam cm adalah ${len1} + ${len2} = ${len1 + len2} cm. Untuk mengubahnya ke meter, bagi dengan 100: ${len1 + len2} / 100 = ${((len1 + len2) / 100).toFixed(2)} meter.` }; },
+            // Perbandingan sederhana
+            () => { const ratio1 = randInt(1, 3), ratio2 = randInt(4, 7); const val = randInt(1, 5) * ratio1; return { question: `Jika perbandingan A:B adalah ${ratio1}:${ratio2}, dan nilai A adalah ${val}, berapakah nilai B?`, answer: val / ratio1 * ratio2, hint: "Tentukan berapa kali lipat A meningkat, lalu terapkan pada B.", category: 'arithmetic', explanation: `Jika A:B = ${ratio1}:${ratio2} dan A = ${val}, maka setiap 1 bagian A adalah ${val}/${ratio1} = ${val/ratio1}. Nilai B adalah ${ratio2} bagian, jadi ${ratio2} × ${val/ratio1} = ${val/ratio1 * ratio2}.` }; },
+            // Sudut dan jenis-jenis sudut
+            () => { const angle = randInt(10, 80); return { question: `Sudut yang besarnya ${angle}° disebut sudut...?`, answer: "lancip", hint: "Sudut kurang dari 90 derajat.", category: 'geometry', explanation: `Sudut dengan besar kurang dari 90° disebut sudut lancip.` }; },
+            // Bangun datar dan keliling
+            () => { const p = randInt(5, 10), l = randInt(3, 7); return { question: `Keliling persegi panjang dengan panjang ${p} cm dan lebar ${l} cm adalah? (cm)`, answer: 2 * (p + l), hint: "Keliling persegi panjang = 2 × (panjang + lebar).", category: 'geometry', explanation: `Keliling persegi panjang dihitung dengan 2 × (panjang + lebar). Jadi, 2 × (${p} + ${l}) = 2 × ${p+l} = ${2*(p+l)} cm.` }; },
+            // Bangun datar dan luas
+            () => { const s = randInt(4, 9); return { question: `Luas persegi dengan sisi ${s} cm adalah? (cm²)?`, answer: s * s, hint: "Luas persegi = sisi × sisi.", category: 'geometry', explanation: `Luas persegi dihitung dengan sisi × sisi. Jadi, ${s} × ${s} = ${s*s} cm².` }; },
+            // Pola bilangan sederhana
+            () => { const start = randInt(2, 10), diff = randInt(1, 5); const seq = [start, start + diff, start + 2 * diff]; return { question: `Berapakah bilangan selanjutnya dalam pola: ${seq.join(', ')}, ...?`, answer: start + 3 * diff, hint: "Tentukan selisih antar bilangan dan lanjutkan pola.", category: 'arithmetic', explanation: `Pola ini adalah barisan aritmatika dengan selisih ${diff}. Bilangan selanjutnya adalah ${seq[2]} + ${diff} = ${start + 3 * diff}.` }; },
+            // Data dan diagram batang
+            () => { const fruits = ['Apel', 'Jeruk', 'Mangga', 'Pisang']; const sales = [randInt(5, 15), randInt(5, 15), randInt(5, 15), randInt(5, 15)]; const maxSale = Math.max(...sales); const mostPopular = fruits[sales.indexOf(maxSale)]; return { question: `Dalam diagram batang, jika Apel terjual ${sales[0]}, Jeruk ${sales[1]}, Mangga ${sales[2]}, dan Pisang ${sales[3]}, buah apakah yang paling banyak terjual?`, answer: mostPopular, hint: "Cari nilai terbesar di antara data penjualan.", category: 'arithmetic', explanation: `Berdasarkan data penjualan: Apel (${sales[0]}), Jeruk (${sales[1]}), Mangga (${sales[2]}), Pisang (${sales[3]}). Buah yang paling banyak terjual adalah ${mostPopular} dengan ${maxSale} penjualan.` }; },
+            // Operasi campuran
+            () => { const a = randInt(5, 10), b = randInt(2, 5), c = randInt(1, 3); return { question: `Hitunglah: ${a} + ${b} × ${c}`, answer: a + b * c, hint: "Ingat urutan operasi: perkalian sebelum penjumlahan.", category: 'arithmetic', explanation: `Menurut urutan operasi (BODMAS/PEMDAS), perkalian dilakukan lebih dulu: ${b} × ${c} = ${b*c}. Kemudian, ${a} + ${b*c} = ${a + b*c}.` }; },
+            // Konversi satuan
+            () => { const kg = randInt(1, 5), g = randInt(100, 900); return { question: `Berapa gram dalam ${kg} kg dan ${g} gram?`, answer: kg * 1000 + g, hint: "1 kg = 1000 gram.", category: 'arithmetic', explanation: `${kg} kg sama dengan ${kg*1000} gram. Jadi, totalnya adalah ${kg*1000} + ${g} = ${kg*1000 + g} gram.` }; },
+            // Soal cerita dasar
+            () => { const totalStudents = randInt(20, 40), girls = randInt(10, 20); return { question: `Di sebuah kelas ada ${totalStudents} siswa. Jika ${girls} di antaranya adalah perempuan, berapa banyak siswa laki-laki?`, answer: totalStudents - girls, hint: "Kurangkan jumlah perempuan dari total siswa.", category: 'arithmetic', explanation: `Jumlah siswa laki-laki adalah total siswa dikurangi jumlah siswa perempuan: ${totalStudents} - ${girls} = ${totalStudents - girls} siswa laki-laki.` }; },
+            // Bilangan negatif dasar
+            () => { const a = randInt(1, 10), b = randInt(1, 10); return { question: `Berapa hasil dari ${a} - ${a + b}?`, answer: -b, hint: "Mengurangi bilangan yang lebih besar dari yang lebih kecil akan menghasilkan negatif.", category: 'arithmetic', explanation: `Mengurangi ${a + b} dari ${a} adalah sama dengan ${a} - ${a} - ${b} = -${b}.` }; },
+            // Uang dan nilai kembalian
+            () => { const price = randInt(5, 10) * 1000, paid = (randInt(1, 3) * 5 + 1) * 1000; return { question: `Jika harga barang Rp${price.toLocaleString('id-ID')} dan Anda membayar dengan uang Rp${paid.toLocaleString('id-ID')}, berapa kembaliannya?`, answer: paid - price, hint: "Kembalian = Uang dibayar - Harga barang.", category: 'arithmetic', explanation: `Kembalian yang Anda dapatkan adalah jumlah uang yang Anda bayar dikurangi harga barang: Rp${paid.toLocaleString('id-ID')} - Rp${price.toLocaleString('id-ID')} = Rp${(paid - price).toLocaleString('id-ID')}.` }; }
         ];
+
         const mediumQuestions = [
-            () => { const a = randInt(5, 15), b = randInt(2, 5), c = randInt(3, 10); return { question: `Berapakah hasil dari ${a} + ${b} × ${c}?`, answer: a + b * c, hint: "Kerjakan perkalian terlebih dahulu (aturan BODMAS/PEMDAS).", category: 'arithmetic', explanation: `Menurut aturan operasi matematika, perkalian dikerjakan sebelum penjumlahan. Jadi, ${b} × ${c} = ${b * c}, lalu ${a} + ${b * c} = ${a + b * c}.` }; },
-            () => { const a = randInt(20, 50), b = randInt(100, 200); return { question: `${a}% dari ${b} adalah?`, answer: (a / 100) * b, hint: "Ubah persentase menjadi desimal (bagi 100), lalu kalikan.", category: 'arithmetic', explanation: `Untuk menghitung persentase, ubah % menjadi desimal (${a}% = ${a/100}) lalu kalikan dengan bilangan: ${a/100} × ${b} = ${(a/100)*b}.` }; },
+            // Operasi bilangan rasional (pecahan dan desimal)
+            () => { const num1 = randInt(1, 5), den1 = randInt(2, 6); const num2 = randInt(1, 5), den2 = randInt(2, 6); const ans = (num1/den1) + (num2/den2); return { question: `Berapakah hasil dari ${num1}/${den1} + ${num2}/${den2}? (bulatkan 2 desimal)`, answer: ans.toFixed(2), hint: "Samakan penyebutnya terlebih dahulu sebelum menjumlahkan.", category: 'arithmetic', explanation: `Untuk menjumlahkan pecahan ${num1}/${den1} dan ${num2}/${den2}, cari KPK dari penyebut (${den1}, ${den2}). Ubah kedua pecahan ke penyebut yang sama, lalu jumlahkan pembilangnya. ${num1}/${den1} + ${num2}/${den2} = ${ans.toFixed(2)}.` }; },
+            () => { const num = randInt(1, 10); const dec = (randInt(1, 99) / 100).toFixed(2); return { question: `Hasil dari ${num} × ${dec} adalah? (bulatkan 2 desimal)`, answer: (num * parseFloat(dec)).toFixed(2), hint: "Kalikan bilangan bulat dengan desimal.", category: 'arithmetic', explanation: `${num} dikalikan dengan ${dec} adalah ${num * parseFloat(dec)}. Pastikan untuk menghitung posisi desimal dengan benar.` }; },
+            // Persamaan linear satu variabel
             () => { const x = randInt(2, 10), b = randInt(5, 15); const c = x + b; return { question: `Jika x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x.", category: 'algebra', explanation: `Untuk mencari x, kurangi kedua sisi dengan ${b}: x + ${b} - ${b} = ${c} - ${b}, sehingga x = ${x}.` }; },
-            () => ({ question: `Sudut yang besarnya kurang dari 90 derajat disebut sudut...?`, answer: "lancip", hint: "Lawan dari sudut tumpul.", category: 'geometry', explanation: `Sudut diklasifikasikan berdasarkan besarnya: lancip (<90°), siku-siku (90°), tumpul (>90°), dan lurus (180°).` }),
-            () => { const base = randInt(5, 10), height = randInt(5, 10); return { question: `Sebuah segitiga memiliki alas ${base} cm dan tinggi ${height} cm. Berapakah luasnya? (cm²)`, answer: (base * height) / 2, hint: "Rumus luas segitiga adalah (alas × tinggi) / 2.", category: 'geometry', explanation: `Luas segitiga = (alas × tinggi) / 2 = (${base} × ${height}) / 2 = ${(base * height) / 2} cm².` }; },
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `FPB dari ${a} dan ${b} adalah?`, answer: getGcd(a, b), hint: "Cari bilangan terbesar yang dapat membagi kedua angka.", category: 'arithmetic', explanation: `Faktor Persekutuan Terbesar (FPB) dari ${a} dan ${b} adalah ${getGcd(a, b)}.` }; },
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `KPK dari ${a} dan ${b} adalah?`, answer: getLcm(a, b), hint: "Cari bilangan terkecil yang dapat dibagi oleh kedua angka.", category: 'arithmetic', explanation: `Kelipatan Persekutuan Terkecil (KPK) dari ${a} dan ${b} adalah ${getLcm(a, b)}.` }; },
-            () => { const num = randInt(10, 30); return { question: `Faktorisasi prima dari ${num} adalah?`, answer: getPrimeFactorization(num), hint: "Bagi bilangan dengan bilangan prima terkecil hingga hasilnya 1.", category: 'arithmetic', explanation: `Faktorisasi prima dari ${num} adalah ${getPrimeFactorization(num)}.` }; }
+            () => { const x = randInt(2, 7), a = randInt(2, 5); const c = a * x; return { question: `Jika ${a}x = ${c}, berapakah nilai x?`, answer: x, hint: "Bagi kedua sisi dengan koefisien x.", category: 'algebra', explanation: `Untuk mencari x, bagi kedua sisi dengan ${a}: ${a}x / ${a} = ${c} / ${a}, sehingga x = ${x}.` }; },
+            // Sistem koordinat kartesius
+            () => { const x1 = randInt(-5, 5), y1 = randInt(-5, 5), x2 = randInt(-5, 5), y2 = randInt(-5, 5); return { question: `Berapakah jarak antara titik (${x1}, ${y1}) dan (${x2}, ${y2})? (bulatkan 2 desimal)`, answer: Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2), hint: "Gunakan rumus jarak: √((x2-x1)² + (y2-y1)²).", category: 'geometry', explanation: `Menggunakan rumus jarak antara dua titik: √((x2-x1)² + (y2-y1)²). Jadi, √((${x2}-${x1})² + (${y2}-${y1})²) = √(${Math.pow(x2-x1, 2)} + ${Math.pow(y2-y1, 2)}) = √${Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2)} = ${Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2)}.` }; },
+            // Perbandingan senilai dan berbalik nilai
+            () => { const speed1 = randInt(40, 60), time1 = randInt(2, 5); const speed2 = randInt(70, 90); return { question: `Jika sebuah mobil menempuh jarak dalam ${time1} jam dengan kecepatan ${speed1} km/jam, berapa waktu yang dibutuhkan jika kecepatannya ${speed2} km/jam? (Perbandingan berbalik nilai, bulatkan 1 desimal)`, answer: ((speed1 * time1) / speed2).toFixed(1), hint: "Jarak = kecepatan × waktu. Jarak konstan.", category: 'arithmetic', explanation: `Ini adalah perbandingan berbalik nilai. Jarak total = ${speed1} km/jam × ${time1} jam = ${speed1 * time1} km. Dengan kecepatan ${speed2} km/jam, waktu yang dibutuhkan adalah ${speed1 * time1} / ${speed2} = ${((speed1 * time1) / speed2).toFixed(1)} jam.` }; },
+            // Persentase dan diskon
+            () => { const price = randInt(50, 150) * 1000; const discount = randInt(10, 30); return { question: `Harga sebuah baju Rp${price.toLocaleString('id-ID')}. Jika ada diskon ${discount}%, berapa harga baju setelah diskon?`, answer: price * (1 - discount / 100), hint: "Hitung jumlah diskon, lalu kurangkan dari harga awal.", category: 'arithmetic', explanation: `Jumlah diskon adalah ${discount}% dari Rp${price.toLocaleString('id-ID')} = Rp${(price * discount / 100).toLocaleString('id-ID')}. Harga setelah diskon = Rp${price.toLocaleString('id-ID')} - Rp${(price * discount / 100).toLocaleString('id-ID')} = Rp${(price * (1 - discount / 100)).toLocaleString('id-ID')}.` }; },
+            // Teorema Pythagoras (dasar)
+            () => { const a = randInt(3, 8), b = randInt(3, 8); return { question: `Dalam segitiga siku-siku, jika sisi siku-sikunya ${a} cm dan ${b} cm, berapakah panjang sisi miringnya? (bulatkan 2 desimal)`, answer: Math.sqrt(a * a + b * b).toFixed(2), hint: "Gunakan teorema Pythagoras: a² + b² = c².", category: 'geometry', explanation: `Menurut Teorema Pythagoras, c² = a² + b². Jadi, c = √(${a}² + ${b}²) = √(${a*a} + ${b*b}) = √${a*a + b*b} ≈ ${Math.sqrt(a*a + b*b).toFixed(2)} cm.` }; },
+            // Luas dan volume bangun ruang
+            () => { const r = randInt(2, 5); return { question: `Volume bola dengan jari-jari ${r} cm adalah? (Gunakan π = 3.14, bulatkan 2 desimal)`, answer: (4/3 * 3.14 * r * r * r).toFixed(2), hint: "Volume bola = 4/3 × π × r³.", category: 'geometry', explanation: `Volume bola = 4/3 × π × r³. Jadi, 4/3 × 3.14 × ${r}³ = ${((4/3 * 3.14 * r * r * r)).toFixed(2)} cm³.` }; },
+            // Menentukan gradien garis
+            () => { const x1 = randInt(-3, 3), y1 = randInt(-3, 3), x2 = randInt(-3, 3), y2 = randInt(-3, 3); const slope = (y2 - y1) / (x2 - x1); if (x1 === x2) return mediumQuestions[randInt(0, mediumQuestions.length - 1)](); // Avoid vertical line, redraw
+                return { question: `Berapakah gradien garis yang melalui titik (${x1}, ${y1}) dan (${x2}, ${y2})? (bulatkan 2 desimal)`, answer: slope.toFixed(2), hint: "Gradien = (y2 - y1) / (x2 - x1).", category: 'algebra', explanation: `Gradien (m) dihitung dengan rumus (y2 - y1) / (x2 - x1). Jadi, (${y2} - ${y1}) / (${x2} - ${x1}) = ${y2-y1} / ${x2-x1} = ${slope.toFixed(2)}.` }; },
+            // Soal cerita aljabar
+            () => { const pricePerItem = randInt(5, 10) * 1000, totalPaid = randInt(2, 4) * pricePerItem + randInt(1, 3) * 1000; return { question: `Andi membeli beberapa pulpen seharga Rp${pricePerItem.toLocaleString('id-ID')} per buah. Jika total yang dibayar Rp${totalPaid.toLocaleString('id-ID')}, berapa pulpen yang dibeli Andi?`, answer: totalPaid / pricePerItem, hint: "Total harga dibagi harga per pulpen.", category: 'algebra', explanation: `Jumlah pulpen = Total yang dibayar / Harga per pulpen = Rp${totalPaid.toLocaleString('id-ID')} / Rp${pricePerItem.toLocaleString('id-ID')} = ${totalPaid / pricePerItem} pulpen.` }; },
+            // Diagram lingkaran
+            () => { const total = randInt(50, 100); const percentages = shuffleArray([20, 25, 30, 25]); const labels = ['A', 'B', 'C', 'D']; const item = labels[randInt(0, 3)]; const value = Math.round(total * percentages[labels.indexOf(item)] / 100); return { question: `Dalam sebuah diagram lingkaran, jika kategori '${item}' memiliki ${percentages[labels.indexOf(item)]}% dari total ${total} responden, berapa jumlah responden untuk kategori '${item}'?`, answer: value, hint: "Hitung persentase dari total.", category: 'arithmetic', explanation: `Jumlah responden untuk kategori '${item}' adalah ${percentages[labels.indexOf(item)]}% dari ${total}, yaitu (${percentages[labels.indexOf(item)]}/100) × ${total} = ${value} responden.` }; },
+            // Peluang dasar (frekuensi relatif)
+            () => { const total = randInt(20, 50), event = randInt(5, 15); return { question: `Dalam 50 percobaan, sebuah kejadian muncul sebanyak ${event} kali. Berapakah frekuensi relatif kejadian tersebut? (bulatkan 2 desimal)`, answer: (event / 50).toFixed(2), hint: "Frekuensi relatif = (Jumlah kemunculan kejadian) / (Total percobaan).", category: 'arithmetic', explanation: `Frekuensi relatif kejadian dihitung dengan membagi jumlah kemunculan kejadian (${event}) dengan total percobaan (50): ${event} / 50 = ${(event/50).toFixed(2)}.` }; },
+            // Statistika: modus, median, mean
+            () => { const data = shuffleArray([randInt(1, 10), randInt(1, 10), randInt(1, 10), randInt(1, 10), randInt(1, 10)].sort((a,b)=>a-b)); const mean = data.reduce((sum, val) => sum + val, 0) / data.length; return { question: `Berapakah rata-rata (mean) dari data: ${data.join(', ')}? (bulatkan 2 desimal)`, answer: mean.toFixed(2), hint: "Rata-rata = Jumlah semua data / Banyaknya data.", category: 'arithmetic', explanation: `Jumlah semua data adalah ${data.reduce((sum, val) => sum + val, 0)}. Banyaknya data adalah ${data.length}. Rata-rata = ${data.reduce((sum, val) => sum + val, 0)} / ${data.length} = ${mean.toFixed(2)}.` }; },
+            // Sudut pada segitiga dan segiempat
+            () => { const a = randInt(30, 60), b = randInt(70, 90); return { question: `Dalam sebuah segitiga, dua sudutnya adalah ${a}° dan ${b}°. Berapakah besar sudut ketiga? (°)?`, answer: 180 - a - b, hint: "Jumlah sudut dalam segitiga adalah 180 derajat.", category: 'geometry', explanation: `Jumlah semua sudut dalam segitiga adalah 180°. Jadi, sudut ketiga = 180° - ${a}° - ${b}° = ${180 - a - b}°.` }; },
+            // Pola dan barisan aritmatika
+            () => { const a1 = randInt(3, 15), d = randInt(2, 7); const n = randInt(5, 10); return { question: `Suku ke-${n} dari barisan aritmatika dengan suku pertama ${a1} dan beda ${d} adalah?`, answer: a1 + (n - 1) * d, hint: "Rumus suku ke-n aritmatika: Un = a + (n-1)d.", category: 'algebra', explanation: `Menggunakan rumus suku ke-n barisan aritmatika, Un = a + (n-1)d. Suku ke-${n} adalah ${a1} + (${n}-1) × ${d} = ${a1} + ${(n-1)*d} = ${a1 + (n-1)*d}.` }; },
+            // Konversi waktu dan zona waktu
+            () => { const time = randInt(8, 18), offset = randInt(1, 5); return { question: `Jika di Jakarta pukul ${time}:00 WIB, pukul berapa di London yang memiliki zona waktu WIB-7?`, answer: `${(time - 7 + 24) % 24}:00`, hint: "Kurangkan perbedaan zona waktu. Ingat siklus 24 jam.", category: 'arithmetic', explanation: `Jika London adalah WIB-7, maka waktu di London adalah ${time} - 7. Karena bisa menjadi negatif, tambahkan 24 jika hasilnya negatif: (${time} - 7 + 24) % 24 = ${((time - 7 + 24) % 24)}:00.` }; },
+            // Pecahan campuran ke bentuk desimal
+            () => { const whole = randInt(1, 5), num = randInt(1, 3), den = [2, 4, 5, 8][randInt(0, 3)]; return { question: `Berapakah bentuk desimal dari ${whole} ${num}/${den}? (bulatkan 2 desimal)`, answer: (whole + num / den).toFixed(2), hint: "Ubah pecahan biasa menjadi desimal, lalu tambahkan bilangan bulat.", category: 'arithmetic', explanation: `${whole} ${num}/${den} sama dengan ${whole} + (${num} ÷ ${den}) = ${whole} + ${(num/den).toFixed(2)} = ${(whole + num/den).toFixed(2)}.` }; }
         ];
+
         const hardQuestions = [
-             () => { const x = randInt(2, 10), a = randInt(2, 5), b = randInt(1, 10); const c = a * x + b; return { question: `Jika ${a}x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Isolasi variabel x untuk menemukan nilainya.", isDailyChallenge: true, category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${b}: ${a}x = ${c} - ${b} → ${a}x = ${a*x}. Lalu bagi kedua sisi dengan ${a}: x = ${a*x / a} → x = ${x}.` }; },
-            () => { const sisi = randInt(3, 7); return { question: `Volume sebuah kubus dengan panjang rusuk ${sisi} cm adalah? (cm³)?`, answer: sisi * sisi * sisi, hint: "Volume kubus adalah rusuk pangkat tiga.", category: 'geometry', explanation: `Rumus volume kubus adalah sisi × sisi × sisi atau sisi³. Dengan rusuk ${sisi} cm, volumenya adalah ${sisi}³ = ${sisi*sisi*sisi} cm³.` }; },
-            () => { return { question: `Berapakah peluang munculnya angka genap pada lemparan sebuah dadu? (jawaban dalam desimal)`, answer: 0.5, hint: "Jumlah sisi genap dibagi total sisi.", category: 'arithmetic', explanation: `Dadu memiliki 6 sisi (1,2,3,4,5,6). Sisi genap ada 3 (2,4,6). Peluang = (jumlah sisi genap) / (total sisi) = 3/6 = 0.5.` }; },
-            () => { const x = randInt(2, 5), c = randInt(1, 5); return { question: `Jika f(x) = x² - ${c}, berapakah nilai f(${x})?`, answer: x * x - c, hint: "Ganti semua x dalam fungsi dengan angka yang diberikan.", isDailyChallenge: true, category: 'algebra', explanation: `Untuk mencari f(${x}), ganti setiap 'x' dalam fungsi f(x) = x² - ${c} dengan ${x}. Maka, f(${x}) = (${x})² - ${c} = ${x*x} - ${c} = ${x*x - c}.` }; },
-            () => { const a = randInt(3, 6), b = randInt(3, 6); return { question: `Dalam segitiga siku-siku, jika sisi siku-sikunya ${a} cm dan ${b} cm, berapakah sisi miringnya? (cm)`, answer: Math.sqrt(a*a + b*b).toFixed(2), hint: "Gunakan teorema Pythagoras.", category: 'geometry', explanation: `Menurut teorema Pythagoras, sisi miring = √(sisi1² + sisi2²) = √(${a}² + ${b}²) = √(${a*a} + ${b*b}) = √${a*a + b*b} ≈ ${Math.sqrt(a*a + b*b).toFixed(2)} cm.` }; },
-            () => { const a = randInt(1, 5), b = randInt(1, 5); return { question: `Jika 2x + ${a} = ${b}, berapakah nilai x?`, answer: (b - a) / 2, hint: "Isolasi variabel x.", category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${a}: 2x = ${b} - ${a} → 2x = ${b - a}. Lalu bagi kedua sisi dengan 2: x = ${b - a} / 2 → x = ${(b - a) / 2}.` }; },
-            () => { const num = randInt(10, 20); return { question: `Berapakah hasil dari √${num * num}?`, answer: num, hint: "Akar kuadrat dari bilangan kuadrat sempurna adalah bilangan bulat.", category: 'arithmetic', explanation: `Karena ${num} × ${num} = ${num * num}, maka √${num * num} = ${num}.` }; },
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Jika ${a}x = ${b}x + ${a*b}, berapakah nilai x?`, answer: b, hint: "Kumpulkan semua suku x di satu sisi.", category: 'algebra', explanation: `Pertama, kurangi kedua sisi dengan ${b}x: ${a}x - ${b}x = ${a*b} → ${a - b}x = ${a*b}. Lalu bagi kedua sisi dengan ${a - b}: x = ${a*b} / ${a - b} → x = ${b}.` }; }
+            // Fungsi dan grafik fungsi linear & kuadrat
+            () => { const m = randInt(2, 5), c = randInt(1, 10), x_val = randInt(-5, 5); return { question: `Jika f(x) = ${m}x + ${c}, berapakah nilai f(${x_val})?`, answer: m * x_val + c, hint: "Ganti 'x' dengan nilai yang diberikan dan hitung.", category: 'algebra', explanation: `Untuk mencari f(${x_val}), substitusi x = ${x_val} ke dalam fungsi: f(${x_val}) = ${m}(${x_val}) + ${c} = ${m*x_val} + ${c} = ${m*x_val + c}.` }; },
+            () => { const a = randInt(1, 3), b = randInt(1, 5), c = randInt(-5, 5); const x = randInt(-3, 3); return { question: `Jika f(x) = ${a}x² + ${b}x + ${c}, berapakah nilai f(${x})?`, answer: a * x * x + b * x + c, hint: "Ganti 'x' dengan nilai yang diberikan dan hitung.", category: 'algebra', explanation: `Untuk mencari f(${x}), substitusi x = ${x} ke dalam fungsi: f(${x}) = ${a}(${x})² + ${b}(${x}) + ${c} = ${a*x*x} + ${b*x} + ${c} = ${a*x*x + b*x + c}.` }; },
+            // Persamaan dan pertidaksamaan kuadrat
+            () => { const r1 = randInt(1, 5), r2 = randInt(-5, -1); const b = -(r1 + r2); const c = r1 * r2; return { question: `Selesaikan persamaan kuadrat: x² ${b < 0 ? b : '+' + b}x ${c < 0 ? c : '+' + c} = 0 (pisahkan jawaban dengan koma, contoh: 2,3)`, answer: `${Math.min(r1, r2)},${Math.max(r1, r2)}`, hint: "Faktorkan persamaan atau gunakan rumus kuadrat.", isDailyChallenge: true, category: 'algebra', explanation: `Persamaan x² ${b < 0 ? b : '+' + b}x ${c < 0 ? c : '+' + c} = 0 dapat difaktorkan menjadi (x - ${r1})(x - ${r2}) = 0. Jadi solusinya adalah x = ${r1} atau x = ${r2}.` }; },
+            // Barisan dan deret (aritmatika & geometri)
+            () => { const a1 = randInt(2, 10), r = randInt(2, 4); const n = randInt(3, 6); return { question: `Suku ke-${n} dari barisan geometri dengan suku pertama ${a1} dan rasio ${r} adalah?`, answer: a1 * Math.pow(r, n - 1), hint: "Rumus suku ke-n geometri: Un = a × r^(n-1).", category: 'algebra', explanation: `Menggunakan rumus suku ke-n barisan geometri, Un = a × r^(n-1). Suku ke-${n} adalah ${a1} × ${r}^(${n}-1) = ${a1} × ${Math.pow(r, n-1)} = ${a1 * Math.pow(r, n-1)}.` }; },
+            () => { const a1 = randInt(1, 5), d = randInt(2, 5); const n = randInt(5, 10); const sum = n/2 * (2*a1 + (n-1)*d); return { question: `Jumlah ${n} suku pertama deret aritmatika dengan suku pertama ${a1} dan beda ${d} adalah?`, answer: sum, hint: "Rumus jumlah n suku aritmatika: Sn = n/2 × (2a + (n-1)d).", category: 'algebra', explanation: `Menggunakan rumus jumlah n suku deret aritmatika, Sn = n/2 × (2a + (n-1)d). Sn = ${n}/2 × (2×${a1} + (${n}-1)×${d}) = ${n/2} × (${2*a1} + ${(n-1)*d}) = ${sum}.` }; },
+            // Logaritma dan eksponen dasar
+            () => { const base = randInt(2, 5), exponent = randInt(2, 4); return { question: `Logaritma basis ${base} dari ${Math.pow(base, exponent)} adalah?`, answer: exponent, hint: "log_b(b^x) = x.", category: 'arithmetic', explanation: `logaritma basis ${base} dari ${Math.pow(base, exponent)} berarti mencari pangkat berapa ${base} harus dinaikkan untuk mendapatkan ${Math.pow(base, exponent)}. Jawabannya adalah ${exponent}.` }; },
+            () => { const base = randInt(2, 5), exp1 = randInt(2, 4), exp2 = randInt(2, 4); return { question: `Sederhanakan: ${base}^${exp1} × ${base}^${exp2}`, answer: `${base}^${exp1 + exp2}`, hint: "Jika basis sama, jumlahkan pangkatnya.", category: 'algebra', explanation: `Menurut aturan eksponen, ketika basisnya sama, kita bisa menjumlahkan pangkatnya: ${base}^${exp1} × ${base}^${exp2} = ${base}^(${exp1} + ${exp2}) = ${base}^${exp1 + exp2}.` }; },
+            // Matriks (operasi dasar & determinan)
+            () => { const a = randInt(1, 5), b = randInt(1, 5), c = randInt(1, 5), d = randInt(1, 5); return { question: `Berapakah determinan dari matriks [[${a}, ${b}], [${c}, ${d}]]?`, answer: a * d - b * c, hint: "Determinan = (a×d) - (b×c).", category: 'algebra', explanation: `Determinan matriks 2x2 [[a,b],[c,d]] adalah (a×d) - (b×c). Jadi, (${a} × ${d}) - (${b} × ${c}) = ${a*d} - ${b*c} = ${a*d - b*c}.` }; },
+            // Peluang dan kombinatorik dasar
+            () => { const n = randInt(3, 6); return { question: `Berapakah nilai dari ${n} Faktorial (${n}!)?`, answer: (function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n), hint: "n! = n × (n-1) × ... × 1.", category: 'arithmetic', explanation: `${n}! (n faktorial) adalah hasil perkalian semua bilangan bulat positif dari 1 hingga ${n}. Jadi, ${n}! = ${Array.from({length:n}, (_,i)=>i+1).join(' × ')} = ${(function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n)}.` }; },
+            () => { const n = randInt(3, 7), k = randInt(1, Math.floor(n/2)); return { question: `Berapa banyak cara memilih ${k} objek dari ${n} objek berbeda tanpa memperhatikan urutan? (C(${n}, ${k}))`, answer: (function combinations(n_val, k_val) { if (k_val < 0 || k_val > n_val) return 0; if (k_val === 0 || k_val === n_val) return 1; if (k_val > n_val / 2) k_val = n_val - k_val; let res = 1; for (let i = 1; i <= k_val; ++i) { res = res * (n_val - i + 1) / i; } return res; })(n, k), hint: "Gunakan rumus kombinasi C(n,k) = n! / (k!(n-k)!).", category: 'arithmetic', explanation: `Jumlah cara memilih ${k} objek dari ${n} objek tanpa memperhatikan urutan adalah kombinasi C(${n}, ${k}) = ${n}! / (${k}!((${n}-${k})!)) = ${(function combinations(n_val, k_val) { if (k_val < 0 || k_val > n_val) return 0; if (k_val === 0 || k_val === n_val) return 1; if (k_val > n_val / 2) k_val = n_val - k_val; let res = 1; for (let i = 1; i <= k_val; ++i) { res = res * (n_val - i + 1) / i; } return res; })(n, k)}.` }; },
+            // Geometri koordinat (jarak titik ke garis) - simplified
+            () => { const a = randInt(1, 5), b = randInt(1, 5), c = randInt(1, 10); const x0 = randInt(-3, 3), y0 = randInt(-3, 3); return { question: `Jarak titik (${x0}, ${y0}) ke garis ${a}x + ${b}y + ${c} = 0 adalah? (bulatkan 2 desimal)`, answer: (Math.abs(a * x0 + b * y0 + c) / Math.sqrt(a*a + b*b)).toFixed(2), hint: "Gunakan rumus jarak titik ke garis.", category: 'geometry', explanation: `Rumus jarak titik (x0, y0) ke garis Ax + By + C = 0 adalah |Ax0 + By0 + C| / √(A² + B²). Jadi, |${a}(${x0}) + ${b}(${y0}) + ${c}| / √(${a}² + ${b}²) = |${a*x0 + b*y0 + c}| / √${a*a + b*b} = ${(Math.abs(a * x0 + b * y0 + c) / Math.sqrt(a*a + b*b)).toFixed(2)}.` }; },
+            // Trigonometri sudut istimewa
+            () => { const angle = [0, 30, 45, 60, 90][randInt(0, 4)]; return { question: `Berapakah nilai dari sin(${angle}°)? (bulatkan 2 desimal)`, answer: Math.sin(angle * Math.PI / 180).toFixed(2), hint: "Ingat nilai sin dari sudut-sudut istimewa.", category: 'geometry', explanation: `Nilai sin(${angle}°) adalah ${Math.sin(angle * Math.PI / 180).toFixed(2)}. Sebagai contoh, sin(30°) = 0.5.` }; },
+            () => { const angle = [0, 30, 45, 60, 90][randInt(0, 4)]; return { question: `Berapakah nilai dari cos(${angle}°)? (bulatkan 2 desimal)`, answer: Math.cos(angle * Math.PI / 180).toFixed(2), hint: "Ingat nilai cos dari sudut-sudut istimewa.", category: 'geometry', explanation: `Nilai cos(${angle}°) adalah ${Math.cos(angle * Math.PI / 180).toFixed(2)}. Sebagai contoh, cos(60°) = 0.5.` }; },
+            // Turunan dan penerapannya (kemiringan)
+            () => { const a = randInt(2, 5), b = randInt(1, 5); return { question: `Turunan pertama dari f(x) = ${a}x² + ${b}x adalah? (format: 4x+2)`, answer: `${2 * a}x+${b}`, hint: "Gunakan aturan turunan pangkat: d/dx(cx^n) = n*cx^(n-1).", category: 'algebra', explanation: `Turunan dari ${a}x² adalah 2 × ${a}x¹ = ${2*a}x. Turunan dari ${b}x adalah ${b}. Jadi, turunan pertamanya adalah ${2*a}x + ${b}.` }; },
+            // Limit fungsi aljabar
+            () => { const val = randInt(1, 5); return { question: `Berapakah nilai lim (x→${val}) dari (x² - ${val*val}) / (x - ${val})?`, answer: 2 * val, hint: "Faktorkan pembilang lalu sederhanakan.", category: 'algebra', explanation: `Faktorkan pembilang menjadi (x - ${val})(x + ${val}). Persamaan menjadi (x - ${val})(x + ${val}) / (x - ${val}). Setelah disederhanakan menjadi x + ${val}. Ketika x mendekati ${val}, hasilnya adalah ${val} + ${val} = ${2*val}.` }; },
+            // Fungsi komposisi dan invers
+            () => { const a = randInt(2, 5), b = randInt(1, 10), x_val = randInt(-3, 3); return { question: `Jika f(x) = ${a}x + ${b} dan g(x) = x - ${x_val}, berapakah nilai (f ∘ g)(x)? (format: 2x+1)`, answer: `${a}x + ${b - a * x_val}`, hint: "Substitusi g(x) ke dalam f(x).", category: 'algebra', explanation: `(f ∘ g)(x) berarti f(g(x)). Ganti g(x) = x - ${x_val} ke dalam f(x) = ${a}x + ${b}. Jadi, f(x - ${x_val}) = ${a}(x - ${x_val}) + ${b} = ${a}x - ${a*x_val} + ${b} = ${a}x + ${b - a*x_val}.` }; },
+            // Statistika: distribusi data
+            () => { const data = shuffleArray([1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 5, 6, 6, 7]).slice(0, randInt(8, 12)); const mode = data.sort((a,b)=>data.filter(v=>v===a).length-data.filter(v=>v===b).length).pop(); return { question: `Berapakah modus dari data: ${data.join(', ')}?`, answer: mode, hint: "Modus adalah nilai yang paling sering muncul.", category: 'arithmetic', explanation: `Modus adalah angka yang paling sering muncul dalam sebuah kumpulan data. Dalam data ${data.join(', ')}, angka ${mode} muncul paling sering.` }; }
         ];
+
         const extremeQuestions = [
-            () => ({ question: "Berapakah hasil dari sin(30°) + cos(60°)? (dalam desimal)", answer: 1, hint: "Gunakan nilai dari sudut-sudut istimewa trigonometri.", category: 'geometry', explanation: `Nilai sudut istimewa trigonometri adalah sin(30°) = 0.5 dan cos(60°) = 0.5. Jadi, 0.5 + 0.5 = 1.` }),
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Turunan dari f(x) = ${a}x² + ${b}x adalah? (format: 4x+2)`, answer: `${2 * a}x+${b}`, hint: "Gunakan aturan pangkat: d/dx(ax^n) = n*ax^(n-1).", category: 'algebra', explanation: `Menggunakan aturan turunan pangkat, turunan dari ${a}x² adalah 2 × ${a}x¹ = ${2*a}x. Turunan dari ${b}x adalah ${b}. Jadi, turunannya adalah ${2*a}x + ${b}.` }; },
-            () => { const a = randInt(2, 4), b = randInt(3, 5); return { question: `Jika 2^${a} × 2^${b} = 2^x, maka nilai x adalah?`, answer: a + b, hint: "Jika basisnya sama, pangkatnya dijumlahkan.", category: 'algebra', explanation: `Menurut aturan eksponen, a^m × a^n = a^(m+n). Jadi, 2^${a} × 2^${b} = 2^(${a}+${b}). Maka, nilai x adalah ${a+b}.` }; },
-            () => { const a = randInt(1, 5), b = randInt(1, 5); const sum = a + b, prod = a * b; return { question: `Jika a + b = ${sum} dan ab = ${prod}, maka a² + b² = ?`, answer: a * a + b * b, hint: "Ingat bahwa (a+b)² = a² + b² + 2ab.", isDailyChallenge: true, category: 'algebra', explanation: `Kita bisa menggunakan identitas aljabar (a+b)² = a² + b² + 2ab. Dengan mengubah urutannya, kita dapatkan a² + b² = (a+b)² - 2ab. Maka, a² + b² = (${sum})² - 2(${prod}) = ${sum*sum} - ${2*prod} = ${sum*sum - 2*prod}.` }; },
-            () => { const a = randInt(3, 6), b = randInt(3, 6), c = randInt(1, 3); return { question: `Selesaikan persamaan kuadrat: x² - ${a + b}x + ${a * b} = 0`, answer: `${a},${b}`, hint: "Faktorkan persamaan kuadrat.", category: 'algebra', explanation: `Persamaan x² - ${a + b}x + ${a * b} = 0 dapat difaktorkan menjadi (x - ${a})(x - ${b}) = 0. Jadi solusinya adalah x = ${a} atau x = ${b}.` }; },
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Integral dari ${a}x + ${b} terhadap x adalah? (format: 2x^2+3x+C)`, answer: `${a/2}x^2+${b}x+C`, hint: "Gunakan aturan pangkat untuk integral.", category: 'algebra', explanation: `Integral dari ${a}x adalah ${a/2}x² dan integral dari ${b} adalah ${b}x. Jangan lupa tambahkan konstanta integrasi C.` }; },
-            () => { const a = randInt(2, 5), b = randInt(2, 5); return { question: `Logaritma basis ${a} dari ${Math.pow(a, b)} adalah?`, answer: b, hint: "Ingat definisi logaritma.", category: 'arithmetic', explanation: `Logaritma basis ${a} dari ${Math.pow(a, b)} adalah eksponen yang membuat ${a}^x = ${Math.pow(a, b)}, yaitu ${b}.` }; },
-            () => { const a = randInt(1, 3), b = randInt(1, 3); return { question: `Berapakah determinan dari matriks [[${a}, ${b}], [${b}, ${a}]]?`, answer: a*a - b*b, hint: "Determinan matriks 2x2 [[a,b],[c,d]] adalah ad - bc.", category: 'algebra', explanation: `Determinan dari [[${a}, ${b}], [${b}, ${a}]] adalah (${a} × ${a}) - (${b} × ${b}) = ${a*a} - ${b*b} = ${a*a - b*b}.` }; }
+            // Teori bilangan (prima, modulo, kongruensi)
+            () => { const n = randInt(10, 20), divisor = randInt(2, 7); return { question: `Berapakah sisa pembagian (modulo) ${n} dibagi ${divisor}? (${n} mod ${divisor})`, answer: n % divisor, hint: "Sisa pembagian.", category: 'arithmetic', explanation: `${n} mod ${divisor} adalah sisa ketika ${n} dibagi dengan ${divisor}. ${n} = ${Math.floor(n/divisor)} × ${divisor} + ${n % divisor}. Jadi, sisanya adalah ${n % divisor}.` }; },
+            // Kombinatorika lanjutan (inclusion-exclusion) - simplified
+            () => { const a = randInt(10, 20), b = randInt(10, 20), intersection = randInt(2, 8); return { question: `Dalam sebuah kelas, ${a} siswa suka matematika, ${b} siswa suka sains, dan ${intersection} siswa suka keduanya. Berapa total siswa yang suka matematika ATAU sains?`, answer: a + b - intersection, hint: "Total = A + B - (A iris B).", category: 'arithmetic', explanation: `Gunakan prinsip inklusi-eksklusi: |A U B| = |A| + |B| - |A ∩ B|. Jadi, ${a} + ${b} - ${intersection} = ${a + b - intersection} siswa.` }; },
+            // Pembuktian matematika dasar - conceptual
+            () => { return { question: `Manakah pernyataan yang BENAR tentang bilangan prima?`, answer: "Bilangan prima memiliki tepat dua faktor.", hint: "Definisi bilangan prima.", category: 'arithmetic', options: ["Bilangan prima memiliki tepat dua faktor.", "Semua bilangan ganjil adalah prima.", "Bilangan prima selalu genap.", "Bilangan prima tidak bisa dibagi 1."], explanation: `Definisi bilangan prima adalah bilangan asli lebih dari 1 yang hanya memiliki dua faktor positif berbeda, yaitu 1 dan dirinya sendiri.` }; },
+            // Logika proposisional dan kuantor - conceptual
+            () => { return { question: `Jika P adalah "Hari ini hujan" dan Q adalah "Saya membawa payung", apa arti dari P → Q?`, answer: "Jika hari ini hujan, maka saya membawa payung.", hint: "P → Q berarti 'Jika P maka Q'.", category: 'algebra', options: ["Hari ini hujan dan saya membawa payung.", "Jika hari ini hujan, maka saya membawa payung.", "Hari ini tidak hujan atau saya membawa payung.", "Saya membawa payung jika dan hanya jika hari ini hujan."], explanation: `Pernyataan P → Q dalam logika berarti "Jika P maka Q". Jadi, "Jika hari ini hujan, maka saya membawa payung".` }; },
+            // Fungsi rekursif - simple sequence
+            () => { const a0 = randInt(1, 5); return { question: `Jika a_n = a_(n-1) + 2 dan a_0 = ${a0}, berapakah a_3?`, answer: a0 + 2 * 3, hint: "Hitung suku-suku secara berurutan: a1, a2, a3.", category: 'algebra', explanation: `a_0 = ${a0}. a_1 = a_0 + 2 = ${a0+2}. a_2 = a_1 + 2 = ${a0+4}. a_3 = a_2 + 2 = ${a0+6}.` }; },
+            // Persamaan fungsional - basic
+            () => { const k = randInt(2, 5); return { question: `Jika f(x + 1) = f(x) + ${k} dan f(0) = 1, berapakah f(3)?`, answer: 1 + k * 3, hint: "Temukan pola pertambahan nilai fungsi.", category: 'algebra', explanation: `f(0) = 1. f(1) = f(0) + ${k} = 1 + ${k}. f(2) = f(1) + ${k} = 1 + 2${k}. f(3) = f(2) + ${k} = 1 + 3${k} = ${1 + k*3}.` }; },
+            // Geometri sintetis dan pembuktian - conceptual
+            () => { return { question: `Sebuah teorema geometri menyatakan bahwa jumlah sudut dalam segitiga adalah 180°. Apakah ini berlaku untuk segitiga pada permukaan bola?`, answer: "Tidak", hint: "Geometri non-Euklides.", category: 'geometry', options: ["Ya", "Tidak", "Tergantung ukuran segitiga", "Hanya jika segitiga itu siku-siku"], explanation: `Tidak. Teorema jumlah sudut 180° berlaku dalam geometri Euclidean (bidang datar). Pada permukaan bola, jumlah sudut dalam segitiga selalu lebih besar dari 180°. Ini adalah bagian dari geometri non-Euclidean.` }; },
+            // Strategi permainan matematika (game theory sederhana)
+            () => { return { question: `Dalam permainan Nim (2 tumpukan, ambil 1 atau 2 korek api), jika Anda memiliki 2 tumpukan masing-masing 3 dan 3 korek api, apakah langkah pertama terbaik untuk menang jika Anda memulai?`, answer: "Ambil 1 korek api dari salah satu tumpukan", hint: "Bertujuan mencapai posisi kalah untuk lawan.", category: 'arithmetic', options: ["Ambil 1 korek api dari salah satu tumpukan", "Ambil 2 korek api dari salah satu tumpukan", "Ambil semua korek api dari satu tumpukan", "Tidak ada langkah pasti untuk menang"], explanation: `Posisi (3,3) adalah posisi menang bagi pemain yang memulai. Dengan mengambil 1 korek api dari salah satu tumpukan, Anda akan meninggalkan lawan dalam posisi (2,3) atau (3,2), yang merupakan posisi kalah (bagi lawan).` }; },
+            // Penerapan trigonometri dalam geometri
+            () => { const side = randInt(5, 10); const angleDeg = 60; const angleRad = angleDeg * Math.PI / 180; return { question: `Sebuah tangga sepanjang ${side} meter bersandar pada dinding membentuk sudut ${angleDeg}° dengan tanah. Berapakah tinggi dinding yang dicapai tangga? (bulatkan 2 desimal)`, answer: (side * Math.sin(angleRad)).toFixed(2), hint: "Gunakan fungsi sinus: sin(sudut) = tinggi/sisi miring.", category: 'geometry', explanation: `Ini membentuk segitiga siku-siku. Tinggi dinding (depan sudut) = panjang tangga (sisi miring) × sin(sudut). Jadi, ${side} × sin(${angleDeg}°) = ${side} × ${Math.sin(angleRad).toFixed(2)} = ${(side * Math.sin(angleRad)).toFixed(2)} meter.` }; },
+            // Soal logika cerita panjang - simplified
+            () => { return { question: `Ani, Budi, dan Cici punya hobi berbeda: membaca, melukis, dan memasak. Ani tidak suka memasak. Budi tidak suka membaca. Siapa yang suka melukis jika yang suka memasak adalah laki-laki?`, answer: "Ani", hint: "Gunakan eliminasi. Yang suka memasak adalah laki-laki, jadi bukan Ani atau Cici.", category: 'algebra', options: ["Ani", "Budi", "Cici", "Tidak dapat ditentukan"], explanation: `Jika yang suka memasak adalah laki-laki, maka yang suka memasak adalah Budi (karena Ani dan Cici adalah perempuan). Ani tidak suka memasak, dan Budi suka memasak (dari eliminasi). Jadi, Cici suka membaca, dan Ani suka melukis.` }; },
+            // Permutasi dan kombinasi ekstrem - harder combinatorics
+            () => { const n = randInt(4, 7); return { question: `Berapa banyak cara menyusun ${n} buku yang berbeda pada sebuah rak?`, answer: (function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n), hint: "Ini adalah soal permutasi (n!).", category: 'arithmetic', explanation: `Jumlah cara menyusun ${n} buku yang berbeda adalah ${n}! (n faktorial). ${n}! = ${Array.from({length:n}, (_,i)=>i+1).join(' × ')} = ${(function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n)}.` }; },
+            // Teorema dasar peluang - conditional probability simplified
+            () => { const total = randInt(20, 30); const a = randInt(5, 10); const b = randInt(5, 10); const intersection = randInt(1, Math.min(a, b) - 1); return { question: `Dalam survei terhadap ${total} orang, ${a} suka kopi dan ${b} suka teh. Jika ${intersection} orang suka keduanya, berapa peluang seseorang suka kopi MENGINGAT mereka suka teh? (bulatkan 2 desimal)`, answer: (intersection / b).toFixed(2), hint: "P(A|B) = P(A ∩ B) / P(B).", category: 'arithmetic', explanation: `Peluang seseorang suka kopi MENGINGAT mereka suka teh adalah P(Kopi|Teh) = P(Kopi ∩ Teh) / P(Teh). Jumlah orang yang suka keduanya adalah ${intersection}. Jumlah orang yang suka teh adalah ${b}. Jadi, peluangnya adalah ${intersection}/${b} = ${(intersection/b).toFixed(2)}.` }; }
         ];
 
         function generateQuestion(difficulty) {
@@ -2986,11 +3087,15 @@
                 default: questionBank = easyQuestions;
             }
 
+            // Filter out already used questions for the current difficulty
             let availableIndices = Array.from({length: questionBank.length}, (_, i) => i)
                 .filter(i => !usedQuestions.has(`${difficulty}-${i}`));
 
+            // If all questions for this difficulty have been used, reset the pool for this difficulty
             if (availableIndices.length === 0) {
-                usedQuestions.clear();
+                for (let i = 0; i < questionBank.length; i++) {
+                    usedQuestions.delete(`${difficulty}-${i}`);
+                }
                 availableIndices = Array.from({length: questionBank.length}, (_, i) => i);
             }
 
@@ -3000,38 +3105,113 @@
             const questionGenerator = questionBank[randomIndex];
             const generated = questionGenerator();
             
-            // Re-engineer the explanation if it's a function
+            // Re-engineer the explanation if it's a function (for dynamic content)
             if (typeof generated.explanation === 'function') {
                 const q = generated.question;
                 const a = generated.answer;
-                const p = q.match(/-?\d+(\.\d+)?/g) || []; // Extract numbers from question
-                generated.explanation = generated.explanation(q, a, p);
+                // Extract numbers (integers or decimals) from question for dynamic explanation if needed
+                const numbersInQuestion = (q.match(/-?\d+(\.\d+)?/g) || []).map(Number);
+                generated.explanation = generated.explanation(q, a, numbersInQuestion);
             }
 
             if (useOptions) {
-                generated.options = generateOptions(generated.answer);
+                generated.options = generateOptions(generated.answer, generated.category);
             }
 
             return generated;
         }
 
-        function generateOptions(correctAnswer) {
+        function generateOptions(correctAnswer, category) {
             const options = [correctAnswer];
             const answerType = typeof correctAnswer;
 
+            // Generate deceptive numerical options
             if (answerType === 'number') {
                 const num = parseFloat(correctAnswer);
-                let range = Math.max(5, Math.abs(num * 0.3));
-    
+                let range = Math.max(1, Math.abs(num * 0.1)); // Smaller range for more deceptive options
+                if (num === 0) range = 1; // Handle 0 specifically to avoid 0 range
+
                 while (options.length < 4) {
-                    let option = (Math.random() > 0.5) ? num + ((Math.random() * range) + 1) : num - ((Math.random() * range) + 1);
-                    option = Math.max(0, Math.round(option * 100) / 100);
-                    if (!options.includes(option)) options.push(option);
+                    let option;
+                    let typeOfDeception = randInt(1, 3); // 1: simple offset, 2: slightly larger/smaller, 3: common mistake
+                    
+                    if (typeOfDeception === 1) {
+                        option = (Math.random() > 0.5) ? num + randInt(1, 2) * range / 2 : num - randInt(1, 2) * range / 2;
+                    } else if (typeOfDeception === 2) {
+                        option = (Math.random() > 0.5) ? num + randInt(1, 3) * range : num - randInt(1, 3) * range;
+                    } else { // common mistake type
+                        // Specific common mistakes based on category
+                        if (category === 'arithmetic') {
+                            if (num % 2 === 0 && num > 0) { // e.g., for division questions, options might be off by 1
+                                option = num + (Math.random() > 0.5 ? 1 : -1);
+                            } else {
+                                option = num * (Math.random() > 0.5 ? 2 : 0.5); // multiplication/division errors
+                            }
+                        } else if (category === 'geometry' && num > 0) { // e.g., area vs perimeter, or small calculation error
+                            option = num + (Math.random() > 0.5 ? 0.01 : -0.01); // slight precision error
+                        } else if (category === 'algebra' && num !== 0) { // e.g., sign errors
+                            option = -num;
+                        } else {
+                            option = (Math.random() > 0.5) ? num + randInt(1, 2) * range : num - randInt(1, 2) * range;
+                        }
+                    }
+
+                    // Ensure numerical answers are rounded appropriately if the correct answer is
+                    if (Number.isInteger(num)) {
+                        option = Math.round(option);
+                    } else {
+                        const decimalPlaces = correctAnswer.toString().split('.')[1]?.length || 0;
+                        option = parseFloat(option.toFixed(decimalPlaces));
+                    }
+                    
+                    // Ensure options are distinct and not equal to the correct answer
+                    if (!options.includes(option) && Math.abs(option - num) > 0.001) { // Use tolerance for float comparison
+                        options.push(option);
+                    }
                 }
-            } else { 
-                 const similarOptions = [correctAnswer.toString().split('').reverse().join(''), correctAnswer.toString().toUpperCase(), "salah"];
-                 similarOptions.forEach(opt => { if(options.length < 4 && !options.includes(opt)) options.push(opt); });
-                 while(options.length < 4) options.push(`opsi ${options.length + 1}`);
+            } 
+            // Generate deceptive text options
+            else { 
+                const correctStr = correctAnswer.toString().toLowerCase();
+                let similarOptions = new Set();
+                
+                // Add variations: typo, slight modification, opposite, related term
+                similarOptions.add(correctStr.split('').reverse().join('')); // Reversed string
+                similarOptions.add(correctStr.substring(0, correctStr.length - 1) + String.fromCharCode(correctStr.charCodeAt(correctStr.length - 1) + 1)); // Last char + 1
+                similarOptions.add(correctStr.substring(0, correctStr.length - 1) + String.fromCharCode(correctStr.charCodeAt(correctStr.length - 1) - 1)); // Last char - 1
+                
+                if (correctStr === "lancip") similarOptions.add("tumpul");
+                if (correctStr === "tumpul") similarOptions.add("lancip");
+                if (correctStr === "benar") similarOptions.add("salah");
+                if (correctStr === "tidak") similarOptions.add("ya");
+                if (correctStr === "matematika") similarOptions.add("fisika");
+
+                // If correct answer is a specific name/term, add other names/terms from the question/context
+                if (correctStr === "ani") similarOptions.add("budi"); similarOptions.add("cici");
+                if (correctStr === "budi") similarOptions.add("ani"); similarOptions.add("cici");
+                if (correctStr === "cici") similarOptions.add("ani"); similarOptions.add("budi");
+
+
+                // Add these to options, ensuring uniqueness and not adding the correct answer itself
+                similarOptions.forEach(opt => {
+                    if (options.length < 4 && opt.toLowerCase() !== correctStr) {
+                        options.push(opt);
+                    }
+                });
+
+                // Fill remaining spots with random, somewhat plausible but incorrect terms
+                while(options.length < 4) {
+                    let randomTerm;
+                    const randomType = randInt(1,3);
+                    if (randomType === 1 && category === 'arithmetic') randomTerm = "pecahan";
+                    else if (randomType === 2 && category === 'geometry') randomTerm = "lingkaran";
+                    else if (randomType === 3 && category === 'algebra') randomTerm = "variabel";
+                    else randomTerm = `Opsi ${options.length + 1}`; // Generic fallback
+
+                    if (!options.includes(randomTerm) && randomTerm.toLowerCase() !== correctStr) {
+                        options.push(randomTerm);
+                    }
+                }
             }
             return shuffleArray(options);
         }
