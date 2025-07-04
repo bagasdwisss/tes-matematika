@@ -1317,6 +1317,36 @@
             border: 1px solid #ddd;
         }
 
+        /* NEW: Category Selector Styles */
+        .category-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            background-color: #6c757d; /* Default button color */
+            color: white;
+        }
+
+        .category-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .category-btn.active {
+            background-color: var(--primary); /* Active color */
+        }
+
+
         /* Responsive Styles */
         @media (max-width: 768px) {
             .difficulty-selector {
@@ -1377,6 +1407,15 @@
             .coin-shop-items {
                 grid-template-columns: 1fr 1fr;
             }
+
+            .category-selector { /* NEW */
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .category-btn { /* NEW */
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -1390,7 +1429,7 @@
     <div class="container">
         <header>
             <h1>Matematika Kuis</h1>
-            <p>Uji kemampuan matematika Anda dengan berbagai tingkat kesulitan!</p>
+            <p>Uji kemampuan matematika dan pengetahuan umum Anda dengan berbagai tingkat kesulitan!</p>
         </header>
 
         <div class="settings-panel">
@@ -1411,6 +1450,11 @@
                     </label>
                 </label>
             </div>
+        </div>
+
+        <div class="category-selector" id="categorySelector">
+            <button class="category-btn active" data-category="math">Matematika</button>
+            <button class="category-btn" data-category="trivia">Trivia</button>
         </div>
 
         <div class="game-mode-selector" id="gameModeSelector">
@@ -1509,8 +1553,7 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Achievement</div>
-                    <div class="stat-value" id="achievementCount">0/8</div>
-                </div>
+                    <div class="stat-value" id="achievementCount">0/9</div> </div>
             </div>
 
             <div class="skill-item">
@@ -1540,6 +1583,15 @@
                 </div>
                 <div class="skill-progress">
                     <div class="skill-progress-bar" id="arithmeticProgress"></div>
+                </div>
+            </div>
+
+            <div class="skill-item"> <div class="skill-label">
+                    <span>Trivia</span>
+                    <span id="triviaPercent">0%</span>
+                </div>
+                <div class="skill-progress">
+                    <div class="skill-progress-bar" id="triviaProgress"></div>
                 </div>
             </div>
 
@@ -1669,10 +1721,11 @@
         let algebraCorrect = 0;
         let geometryCorrect = 0;
         let arithmeticCorrect = 0;
+        let triviaCorrect = 0; // NEW: For trivia skill tracking
         let speedRunTime = 0;
         let speedRunInterval;
         let factInterval;
-        let usedQuestions = new Set(); // Stores 'difficulty-index' to ensure unique questions per session
+        let usedQuestions = new Set(); // Stores 'difficulty-index-category' to ensure unique questions per session
         let activePowerUps = [];
         let ownedItems = {
             powerups: {},
@@ -1681,6 +1734,7 @@
         };
         let currentTheme = 'default';
         let currentTexture = 'grid';
+        let currentCategory = 'math'; // NEW: Default category
 
         // Data achievement
         const achievements = [
@@ -1690,17 +1744,18 @@
             { id: 4, name: "Speed Runner", desc: "Selesaikan level dalam waktu <30 detik", earned: false, reward: 25 },
             { id: 5, name: "Penjelajah", desc: "Coba semua tingkat kesulitan", earned: false, reward: 30 },
             { id: 6, name: "Kolektor Koin", desc: "Kumpulkan 100 koin", earned: false, reward: 50 },
-            { id: 7, name: "Tak Terhentikan", desc: "Selesaikan 20 level", earned: false, reward: 40 },
-            { id: 8, name: "Tanpa Bantuan", desc: "Selesaikan level tanpa menggunakan hint", earned: false, reward: 20 }
+            { id: 7, "name": "Tak Terhentikan", desc: "Selesaikan 20 level", earned: false, reward: 40 },
+            { id: 8, name: "Tanpa Bantuan", desc: "Selesaikan level tanpa menggunakan hint", earned: false, reward: 20 },
+            { id: 9, name: "Ahli Trivia", desc: "Jawab 5 soal trivia dengan benar", earned: false, reward: 15 } // NEW
         ];
 
         // Data leaderboard dummy
         let leaderboardData = [
-            { name: "Anda", score: 0, level: 0, coins: 0 },
-            { name: "Matematikus", score: 450, level: 20, coins: 120 },
-            { name: "Pecinta Angka", score: 380, level: 18, coins: 95 },
-            { name: "Ahli Aljabar", score: 320, level: 16, coins: 80 },
-            { name: "Raja Geometri", score: 290, level: 15, coins: 75 }
+            { name: "Anda", score: 0, level: 0, coins: 0, difficultyPlayed: '', categoryPlayed: '' }, // Modified
+            { name: "Matematikus", score: 450, level: 20, coins: 120, difficultyPlayed: 'hard', categoryPlayed: 'math' }, // Example
+            { name: "Pecinta Angka", score: 380, level: 18, coins: 95, difficultyPlayed: 'medium', categoryPlayed: 'math' }, // Example
+            { name: "Ahli Aljabar", score: 320, level: 16, coins: 80, difficultyPlayed: 'hard', categoryPlayed: 'math' }, // Example
+            { name: "Raja Geometri", score: 290, level: 15, coins: 75, difficultyPlayed: 'medium', categoryPlayed: 'math' } // Example
         ];
 
         // Power-ups data
@@ -1730,7 +1785,7 @@
 
         // Fakta matematika acak
         const mathFacts = [
-            // --- Fakta Angka & Teori Bilangan ---
+            // Math Facts (25 items)
             "Konstanta Kaprekar: Pilih angka 4 digit dengan setidaknya dua digit berbeda, urutkan menurun dan menaik, kurangi hasilnya. Ulangi prosesnya, dan Anda akan selalu berakhir di angka 6174.",
             "Bilangan Vampir adalah bilangan yang 'dapat dihidupkan kembali' oleh dua 'taring' (faktor) yang diambil dari digitnya sendiri. Contoh: 2187 = 27 × 81.",
             "Dalam sekelompok 23 orang, peluang dua orang memiliki tanggal ulang tahun yang sama lebih dari 50%. Ini dikenal sebagai Paradoks Ulang Tahun.",
@@ -1749,10 +1804,16 @@
             "Angka 'googolplex' adalah 10 pangkat googol (10^10^100), sebuah angka yang begitu besar sehingga tidak mungkin untuk menuliskannya di alam semesta yang teramati.",
             "Bilangan Palindromik adalah bilangan yang dibaca sama dari depan maupun belakang, seperti 12321.",
             "Nol (0) adalah satu-satunya bilangan yang memiliki sifat aditif (x+0=x) dan multiplikatif (x*0=0).",
-            "Angka 13 dianggap sial di banyak budaya (triskaidekaphobia) sebagian karena ada 13 orang pada Perjamuan Terakhir.",
             "Sistem bilangan Babilionia Kuno menggunakan basis 60, yang merupakan alasan kita memiliki 60 detik dalam satu menit dan 360 derajat dalam satu lingkaran.",
+            "Paradoks Monty Hall menunjukkan bahwa pilihan intuitif dalam probabilitas seringkali salah. Peluang menang meningkat jika Anda mengubah pilihan Anda.",
+            "Teorema Monyet Tak Terhingga menyatakan bahwa monyet yang mengetik secara acak di mesin tik untuk waktu tak terbatas pada akhirnya hampir pasti akan menghasilkan karya lengkap William Shakespeare.",
+            "Teorema Ketidaklengkapan Gödel menunjukkan bahwa dalam sistem matematika formal apa pun, akan selalu ada pernyataan yang benar tetapi tidak dapat dibuktikan dalam sistem itu sendiri.",
+            "Sebuah setumpuk 52 kartu memiliki 52! (52 faktorial) kemungkinan urutan, sebuah angka yang lebih besar dari jumlah atom di Bumi.",
+            "Rantai Markov adalah model matematika yang menggambarkan urutan peristiwa di mana probabilitas setiap peristiwa hanya bergantung pada keadaan peristiwa sebelumnya.",
+            "Jika Anda mengocok setumpuk kartu dengan benar, kemungkinan besar urutan kartu yang Anda dapatkan belum pernah ada sebelumnya dalam sejarah dunia.",
 
-            // --- Fakta Geometri & Topologi ---
+            // Trivia Quiz Facts (25 items)
+            "Angka 13 dianggap sial di banyak budaya (triskaidekaphobia) sebagian karena ada 13 orang pada Perjamuan Terakhir.",
             "Bentuk penutup lubang got (manhole) biasanya bulat karena itu adalah satu-satunya bentuk yang tidak bisa jatuh ke dalam lubang itu sendiri dari sudut mana pun.",
             "Sebuah Pita Möbius adalah permukaan dengan hanya satu sisi dan satu tepi. Jika Anda berjalan di sepanjang permukaannya, Anda akan kembali ke titik awal di sisi yang 'berlawanan'.",
             "Teorema Empat Warna menyatakan bahwa Anda hanya memerlukan empat warna untuk mewarnai peta apa pun sehingga tidak ada dua wilayah yang berdekatan memiliki warna yang sama.",
@@ -1772,61 +1833,11 @@
             "Objek dengan dimensi fraktal dapat memiliki panjang tak terhingga dalam area yang terbatas.",
             "Pola Voronoi, yang membagi ruang menjadi wilayah berdasarkan kedekatan titik, ditemukan pada kulit jerapah dan sayap capung.",
             "Proyeksi stereografis memungkinkan pemetaan permukaan bola ke bidang datar, yang penting dalam kartografi dan matematika kompleks.",
-            "Topologi sering disebut 'geometri lembaran karet' karena mempelajari sifat-sifat bentuk yang tidak berubah di bawah peregangan atau pembengkokan.",
-
-            // --- Fakta Probabilitas & Logika ---
-            "Paradoks Monty Hall menunjukkan bahwa pilihan intuitif dalam probabilitas seringkali salah. Peluang menang meningkat jika Anda mengubah pilihan Anda.",
-            "Teorema Monyet Tak Terhingga menyatakan bahwa monyet yang mengetik secara acak di mesin tik untuk waktu tak terbatas pada akhirnya hampir pasti akan menghasilkan karya lengkap William Shakespeare.",
-            "Paradoks Banach-Tarski secara kontroversial menyatakan bahwa sebuah bola dapat dipecah menjadi sejumlah bagian terbatas dan disusun kembali menjadi dua bola yang identik dengan aslinya.",
-            "Teorema Ketidaklengkapan Gödel menunjukkan bahwa dalam sistem matematika formal apa pun, akan selalu ada pernyataan yang benar tetapi tidak dapat dibuktikan dalam sistem itu sendiri.",
-            "Hukum Bilangan Besar yang Sesungguhnya menyatakan bahwa dengan ukuran sampel yang cukup besar, hal-hal yang paling aneh dan tidak mungkin pun bisa terjadi.",
-            "Dalam permainan 'Rock, Paper, Scissors', strategi terbaik secara matematis adalah bermain secara acak.",
-            "Peluang Anda memenangkan lotre utama seringkali lebih rendah daripada peluang Anda tersambar petir dalam hidup Anda.",
-            "Sebuah setumpuk 52 kartu memiliki 52! (52 faktorial) kemungkinan urutan, sebuah angka yang lebih besar dari jumlah atom di Bumi.",
-            "Rantai Markov adalah model matematika yang menggambarkan urutan peristiwa di mana probabilitas setiap peristiwa hanya bergantung pada keadaan peristiwa sebelumnya.",
-            "Paradoks Simpson terjadi ketika sebuah tren muncul dalam beberapa kelompok data yang berbeda tetapi menghilang atau berbalik ketika kelompok-kelompok ini digabungkan.",
-            "Jika Anda mengocok setumpuk kartu dengan benar, kemungkinan besar urutan kartu yang Anda dapatkan belum pernah ada sebelumnya dalam sejarah dunia.",
-            "Peluang dua orang di kelas dengan 30 siswa tidak memiliki hari ulang tahun yang sama sangatlah kecil, hanya sekitar 29%.",
-            "Sebuah 'langkah acak' (random walk) adalah jalur yang terdiri dari serangkaian langkah acak, sebuah konsep kunci dalam fisika dan pasar saham.",
-            "Masalah Penjatahan Sekretaris adalah teka-teki probabilitas untuk menemukan strategi optimal untuk memilih kandidat terbaik dari sekelompok pelamar.",
-            "Meskipun kelihatannya berlawanan dengan intuisi, rata-rata jumlah teman dari teman Anda hampir selalu lebih besar dari jumlah teman Anda sendiri (Paradoks Persahabatan).",
-
-            // --- Fakta Sejarah & Lain-lain ---
             "Tanda sama dengan (=) diciptakan oleh matematikawan Robert Recorde pada tahun 1557 karena ia 'bosan menulis 'is equal to' berulang kali'.",
             "Kata 'aljabar' berasal dari bahasa Arab 'al-jabr', yang berarti 'penyatuan kembali bagian-bagian yang rusak', dari judul buku matematikawan Persia, Al-Khwarizmi.",
             "Kata 'algoritma' adalah latinisasi dari nama Al-Khwarizmi.",
             "Sophie Germain adalah seorang matematikawan wanita yang menggunakan nama samaran pria, 'Monsieur Le Blanc', untuk dapat berpartisipasi dalam komunitas matematika yang didominasi pria.",
-            "Simbol tak terhingga (∞) disebut 'lemniscate'.",
-            "Kata 'calculus' berasal dari bahasa Latin untuk 'kerikil kecil', yang digunakan untuk menghitung pada zaman kuno.",
-            "Pythagoras, yang terkenal dengan teoremanya, juga memimpin sebuah kultus yang memuja angka dan percaya bahwa makan kacang adalah dosa.",
-            "Sistem penulisan angka Romawi tidak memiliki konsep angka nol.",
-            "René Descartes konon mendapatkan ide untuk sistem koordinat Kartesius saat melihat seekor lalat merayap di langit-langit kamarnya.",
-            "Évariste Galois mengembangkan dasar-dasar teori grup dan teori Galois malam sebelum ia tewas dalam duel pada usia 20 tahun.",
-            "Jari-jari kita dapat digunakan untuk sistem bilangan berbasis 10 (desimal), tetapi juga dapat digunakan untuk sistem berbasis 12 (duodesimal) dengan menggunakan ibu jari untuk menghitung ruas jari lainnya.",
-            "Istilah 'hundred' berasal dari kata Norse kuno 'hundrath', yang sebenarnya berarti 120 (10 x 12).",
-            "Matematika adalah satu-satunya 'sains' yang tidak memerlukan eksperimen untuk membuktikan kebenarannya; hanya logika dan pembuktian.",
-            "Banyak arsitektur kuno, seperti Piramida Giza, dibangun dengan prinsip-prinsip matematika yang sangat canggih.",
-            "Tanda plus (+) dan minus (-) pertama kali muncul dalam cetakan di Jerman pada akhir abad ke-15.",
-            "Di Taiwan, angka 4 sering dihindari di gedung-gedung (seperti lantai 4) karena pengucapannya mirip dengan kata 'mati'.",
-            "Dalam bahasa Inggris, 'forty' adalah satu-satunya angka yang hurufnya diurutkan secara alfabetis.",
-            "Emmy Noether adalah seorang matematikawan revolusioner yang karyanya dalam aljabar abstrak menjadi dasar bagi banyak fisika modern.",
-            "Sistem matriks dalam matematika dikembangkan secara luas oleh Arthur Cayley pada abad ke-19.",
-            "John Napier, penemu logaritma, juga merancang berbagai 'tulang' (Napier's Bones) untuk mempermudah perkalian.",
-            "Ada sekitar 1.771.47 cara berbeda untuk mengikat dasi, menurut ahli matematika Swedia.",
-            "Jika sebuah pizza memiliki jari-jari 'z' dan ketebalan 'a', volumenya adalah Pi × z × z × a.",
-            "Angka 1 diikuti oleh 100 angka nol disebut 'googol'.",
-            "Notasi modern untuk π baru digunakan secara luas setelah diperkenalkan oleh Leonhard Euler pada tahun 1737.",
-            "Matematika sering disebut sebagai 'Ratu Ilmu Pengetahuan' oleh Carl Friedrich Gauss.",
-            "Kata 'trigonometri' berasal dari bahasa Yunani yang berarti 'pengukuran segitiga'.",
-            "Orang Babilonia memecahkan persamaan kuadrat lebih dari 3000 tahun yang lalu.",
-            "Hypatia dari Alexandria adalah salah satu matematikawan wanita pertama yang tercatat dalam sejarah.",
-            "Konsep fungsi (y = f(x)) merupakan perkembangan penting dalam sejarah matematika yang memungkinkan pemodelan hubungan antar variabel.",
-            "Bilangan imajiner (i, akar kuadrat dari -1) awalnya dianggap 'tidak mungkin' tetapi sekarang sangat penting dalam bidang teknik dan fisika.",
-            "Sistem desimal modern (basis 10) berasal dari sistem angka Hindu-Arab.",
-            "Teori Permainan (Game Theory) adalah cabang matematika yang digunakan dalam ekonomi, ilmu politik, dan biologi untuk memodelkan pengambilan keputusan strategis.",
-            "Dalam bahasa Prancis, angka 90 disebut 'quatre-vingt-dix' yang secara harfnis 'empat-dua puluh-sepuluh' (4 x 20 + 10).",
-            "Selembar kertas yang sangat besar secara teoretis bisa dilipat hingga ke bulan, jika Anda bisa melipatnya 42 kali.",
-            "Ada lebih banyak cara untuk mengatur catur di papan daripada jumlah elektron di alam semesta yang teramati (Nomor Shannon)."
+            "Simbol tak terhingga (∞) disebut 'lemniscate'."
         ];
 
         // Elemen DOM
@@ -1884,6 +1895,8 @@
         const algebraPercent = document.getElementById('algebraPercent');
         const geometryPercent = document.getElementById('geometryPercent');
         const arithmeticPercent = document.getElementById('arithmeticPercent');
+        const triviaProgress = document.getElementById('triviaProgress'); // NEW
+        const triviaPercent = document.getElementById('triviaPercent');     // NEW
         const coinShopBtn = document.getElementById('coinShopBtn');
         const coinShopModal = document.getElementById('coinShopModal');
         const closeCoinShop = document.getElementById('closeCoinShop');
@@ -1893,6 +1906,7 @@
         const themesTab = document.getElementById('themesTab');
         const texturesTab = document.getElementById('texturesTab');
         const coinShopTabs = document.querySelectorAll('.coin-shop-tab');
+        const categorySelector = document.getElementById('categorySelector'); // NEW
 
         // Event Listeners
         document.querySelectorAll('.difficulty-btn').forEach(btn => {
@@ -1901,6 +1915,10 @@
 
         document.querySelectorAll('.game-mode-btn').forEach(btn => {
             btn.addEventListener('click', changeGameMode);
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => { // NEW
+            btn.addEventListener('click', changeCategory);
         });
 
         submitBtn.addEventListener('click', checkAnswer);
@@ -1948,6 +1966,7 @@
                 algebraCorrect = data.algebraCorrect || 0;
                 geometryCorrect = data.geometryCorrect || 0;
                 arithmeticCorrect = data.arithmeticCorrect || 0;
+                triviaCorrect = data.triviaCorrect || 0; // NEW
                 currentTheme = data.currentTheme || 'default';
                 currentTexture = data.currentTexture || 'grid';
                 ownedItems = data.ownedItems || {
@@ -1961,6 +1980,19 @@
                     if (savedAch) ach.earned = savedAch.earned;
                 });
                 
+                // Update leaderboardData from saved data if available
+                if (data.leaderboardData) {
+                    const yourEntry = data.leaderboardData.find(entry => entry.name === "Anda");
+                    if (yourEntry) {
+                        const existingYourEntryIndex = leaderboardData.findIndex(entry => entry.name === "Anda");
+                        if (existingYourEntryIndex !== -1) {
+                            leaderboardData[existingYourEntryIndex] = yourEntry;
+                        } else {
+                            leaderboardData.push(yourEntry);
+                        }
+                    }
+                }
+
                 if (darkMode) {
                     document.body.classList.add('dark-mode');
                     darkModeToggle.checked = true;
@@ -1990,10 +2022,12 @@
                 algebraCorrect,
                 geometryCorrect,
                 arithmeticCorrect,
+                triviaCorrect, // NEW
                 currentTheme,
                 currentTexture,
                 ownedItems,
-                achievements: achievements.filter(a => a.earned)
+                achievements: achievements.filter(a => a.earned),
+                leaderboardData: leaderboardData // NEW: Save leaderboard data
             };
             localStorage.setItem('mathQuizData', JSON.stringify(data));
         }
@@ -2031,18 +2065,18 @@
                 const isCurrent = currentTheme === theme.id;
                 
                 const item = document.createElement('div');
-                item.className = `coin-shop-item ${canAfford ? '' : 'coin-shop-item-disabled'} ${isCurrent ? 'active' : ''}`;
+                // Use 'owned' for themes instead of 'canAfford' for class
+                item.className = `coin-shop-item ${isCurrent ? 'active' : ''} ${owned > 0 ? '' : 'coin-shop-item-disabled'}`; // MODIFIED CLASS LOGIC
                 item.innerHTML = `
                     <div class="coin-shop-item-icon">${theme.icon}</div>
                     <div class="coin-shop-item-name">${theme.name}</div>
                     <div class="coin-shop-item-price">${theme.price} 🪙</div>
                     <small>${theme.description}</small>
                     <div class="theme-preview" style="background: linear-gradient(to right, ${theme.colors.primary}, ${theme.colors.secondary});"></div>
-                    ${owned > 0 ? `<div class="coin-shop-item-owned">${owned}</div>` : ''}
-                    ${isCurrent ? '<div class="coin-shop-item-owned">✓</div>' : ''}
-                `;
+                    ${owned > 0 && !isCurrent ? `<div class="coin-shop-item-owned">✓</div>` : ''} ${isCurrent ? '<div class="coin-shop-item-owned">Aktif</div>' : ''} `;
                 
-                if (canAfford) {
+                // Allow purchasing if not owned and can afford, or if owned (to switch)
+                if (owned > 0 || canAfford) { // MODIFIED CONDITION
                     item.addEventListener('click', () => purchaseItem('themes', theme));
                 }
                 
@@ -2057,17 +2091,17 @@
                 const isCurrent = currentTexture === texture.id;
                 
                 const item = document.createElement('div');
-                item.className = `coin-shop-item ${canAfford ? '' : 'coin-shop-item-disabled'} ${isCurrent ? 'active' : ''}`;
+                // Use 'owned' for textures instead of 'canAfford' for class
+                item.className = `coin-shop-item ${isCurrent ? 'active' : ''} ${owned > 0 ? '' : 'coin-shop-item-disabled'}`; // MODIFIED CLASS LOGIC
                 item.innerHTML = `
                     <div class="coin-shop-item-icon">${texture.icon}</div>
                     <div class="coin-shop-item-name">${texture.name}</div>
                     <div class="coin-shop-item-price">${texture.price} 🪙</div>
                     <small>${texture.description}</small>
-                    ${owned > 0 ? `<div class="coin-shop-item-owned">${owned}</div>` : ''}
-                    ${isCurrent ? '<div class="coin-shop-item-owned">✓</div>' : ''}
-                `;
+                    ${owned > 0 && !isCurrent ? `<div class="coin-shop-item-owned">✓</div>` : ''} ${isCurrent ? '<div class="coin-shop-item-owned">Aktif</div>' : ''} `;
                 
-                if (canAfford) {
+                // Allow purchasing if not owned and can afford, or if owned (to switch)
+                if (owned > 0 || canAfford) { // MODIFIED CONDITION
                     item.addEventListener('click', () => purchaseItem('textures', texture));
                 }
                 
@@ -2079,7 +2113,34 @@
 
         // Purchase item from coin shop
         function purchaseItem(category, item) {
-            if (coins < item.price) return;
+            // For themes and textures, if already owned, just activate it (no coin deduction)
+            if ((category === 'themes' && ownedItems.themes[item.id]) || (category === 'textures' && ownedItems.textures[item.id])) {
+                if (category === 'themes') {
+                    currentTheme = item.id;
+                    applyTheme(item.id);
+                } else if (category === 'textures') {
+                    currentTexture = item.id;
+                    applyTexture(item.id);
+                }
+                saveToLocalStorage();
+                initCoinShop(); // Re-initialize to update active status
+                const popup = document.createElement('div');
+                popup.className = 'achievement-popup';
+                popup.innerHTML = `<h3>Item Diaktifkan!</h3><p>${item.name} telah diaktifkan.</p>`;
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 2000);
+                return; // Exit function
+            }
+
+            if (coins < item.price) {
+                const popup = document.createElement('div');
+                popup.className = 'achievement-popup';
+                popup.style.backgroundColor = 'var(--danger)'; // Red for insufficient coins
+                popup.innerHTML = `<h3>Koin Tidak Cukup!</h3><p>Anda membutuhkan ${item.price - coins} koin lagi.</p>`;
+                document.body.appendChild(popup);
+                setTimeout(() => popup.remove(), 2000);
+                return; // Exit function
+            }
             
             coins -= item.price;
             if (category === 'powerups') {
@@ -2373,6 +2434,20 @@
             }
         }
 
+        function changeCategory(e) { // NEW
+            currentCategory = e.target.dataset.category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            
+            // If a quiz is active, restart it with the new category
+            if (quizContainer.style.display === 'block') {
+                goHome(); // This might be better user experience
+            }
+        }
+
         function startQuiz(e) {
             currentDifficulty = e.target.dataset.difficulty;
             currentLevel = 1;
@@ -2385,6 +2460,15 @@
             activePowerUps = []; // Clear active power-ups at start of new quiz
             usedQuestions.clear(); // Reset used questions for a new game session
             
+            // Reset skill tracking if changing category for a new game session
+            if (currentCategory === 'math') {
+                algebraCorrect = 0;
+                geometryCorrect = 0;
+                arithmeticCorrect = 0;
+            } else if (currentCategory === 'trivia') {
+                triviaCorrect = 0;
+            }
+
             switch(currentDifficulty) {
                 case 'easy':
                     difficultyDisplay.textContent = 'Mudah';
@@ -2441,7 +2525,7 @@
             answerInput.value = '';
             answerInput.className = 'answer-field';
             
-            currentQuestion = generateQuestion(currentDifficulty); // Pass difficulty
+            currentQuestion = generateQuestion(currentCategory, currentDifficulty); // MODIFIED: Pass category
             questionText.textContent = currentQuestion.question;
             
             if (useOptions) {
@@ -2540,9 +2624,13 @@
             let message = '';
 
             if (isCorrect) {
-                if (currentQuestion.category === 'algebra') algebraCorrect++;
-                else if (currentQuestion.category === 'geometry') geometryCorrect++;
-                else if (currentQuestion.category === 'arithmetic') arithmeticCorrect++;
+                if (currentCategory === 'math') { // Original Math category logic
+                    if (currentQuestion.category === 'algebra') algebraCorrect++;
+                    else if (currentQuestion.category === 'geometry') geometryCorrect++;
+                    else if (currentQuestion.category === 'arithmetic') arithmeticCorrect++;
+                } else if (currentCategory === 'trivia') { // NEW: Trivia category logic
+                    triviaCorrect++;
+                }
                 
                 resultIcon.className = 'result-icon correct';
                 resultIcon.textContent = '✓';
@@ -2675,18 +2763,21 @@
         }
 
         function updateSkillProgress() {
-            const totalQuestions = algebraCorrect + geometryCorrect + arithmeticCorrect;
+            const totalQuestions = algebraCorrect + geometryCorrect + arithmeticCorrect + triviaCorrect; // MODIFIED
             const algebraTotal = totalQuestions > 0 ? Math.round((algebraCorrect / totalQuestions) * 100) : 0;
             const geometryTotal = totalQuestions > 0 ? Math.round((geometryCorrect / totalQuestions) * 100) : 0;
             const arithmeticTotal = totalQuestions > 0 ? Math.round((arithmeticCorrect / totalQuestions) * 100) : 0;
+            const triviaTotal = totalQuestions > 0 ? Math.round((triviaCorrect / totalQuestions) * 100) : 0; // NEW
             
             algebraProgress.style.width = `${algebraTotal}%`;
             geometryProgress.style.width = `${geometryTotal}%`;
             arithmeticProgress.style.width = `${arithmeticTotal}%`;
+            triviaProgress.style.width = `${triviaTotal}%`; // NEW
             
             algebraPercent.textContent = `${algebraTotal}%`;
             geometryPercent.textContent = `${geometryTotal}%`;
             arithmeticPercent.textContent = `${arithmeticTotal}%`;
+            triviaPercent.textContent = `${triviaTotal}%`; // NEW
         }
 
         function checkAchievements(isCorrect, timeSpent) {
@@ -2708,15 +2799,24 @@
                 showAchievement(2);
             }
             
+            // NEW: Trivia Expert achievement
+            if (currentCategory === 'trivia' && triviaCorrect >= 5 && !achievements[8].earned) { // Assuming index 8 for Trivia Expert
+                achievements[8].earned = true;
+                coins += achievements[8].reward;
+                showAchievement(8);
+            }
+
             if (gameMode === 'speedrun' && timeSpent < 30 && !achievements[3].earned) {
                 achievements[3].earned = true;
                 coins += achievements[3].reward;
                 showAchievement(3);
             }
             
-            // Check for 'Explorer' achievement: try all difficulties
-            const playedDifficulties = new Set(leaderboardData.slice(1).map(entry => entry.difficultyPlayed).filter(d => d));
-            if (!achievements[4].earned && playedDifficulties.size >= 4) { // Assuming 4 difficulties: easy, medium, hard, extreme
+            // Check for 'Explorer' achievement: try all difficulties in both categories
+            const playedDifficultiesMath = new Set(leaderboardData.filter(entry => entry.categoryPlayed === 'math').map(entry => entry.difficultyPlayed).filter(d => d));
+            const playedDifficultiesTrivia = new Set(leaderboardData.filter(entry => entry.categoryPlayed === 'trivia').map(entry => entry.difficultyPlayed).filter(d => d));
+            
+            if (!achievements[4].earned && (playedDifficultiesMath.size >= 4 || playedDifficultiesTrivia.size >= 4)) { 
                 achievements[4].earned = true;
                 coins += achievements[4].reward;
                 showAchievement(4);
@@ -2807,8 +2907,8 @@
             leaderboardData[0].score = currentScore;
             leaderboardData[0].level = currentLevel;
             leaderboardData[0].coins = coins;
-            // For 'Explorer' achievement tracking
             leaderboardData[0].difficultyPlayed = currentDifficulty; 
+            leaderboardData[0].categoryPlayed = currentCategory; // NEW
             saveToLocalStorage();
         }
 
@@ -2872,7 +2972,7 @@
         }
 
         function shareResults() {
-            const shareText = `Saya baru saja mencoba Matematika Kuis dan mendapatkan ${currentScore} poin di level ${currentLevel} (${currentDifficulty})! Coba tantang saya di sini!`;
+            const shareText = `Saya baru saja mencoba Matematika Kuis dan mendapatkan ${currentScore} poin di level ${currentLevel} (${currentDifficulty}) dalam kategori ${currentCategory === 'math' ? 'Matematika' : 'Trivia'}! Coba tantang saya di sini!`; // MODIFIED
             
             if (navigator.share) {
                 navigator.share({
@@ -2988,7 +3088,7 @@
             () => { const x = randInt(2, 10), b = randInt(5, 15); const c = x + b; return { question: `Jika x + ${b} = ${c}, berapakah nilai x?`, answer: x, hint: "Pindahkan angka ke sisi lain untuk menemukan nilai x.", category: 'algebra', explanation: `Untuk mencari x, kurangi kedua sisi dengan ${b}: x + ${b} - ${b} = ${c} - ${b}, sehingga x = ${x}.` }; },
             () => { const x = randInt(2, 7), a = randInt(2, 5); const c = a * x; return { question: `Jika ${a}x = ${c}, berapakah nilai x?`, answer: x, hint: "Bagi kedua sisi dengan koefisien x.", category: 'algebra', explanation: `Untuk mencari x, bagi kedua sisi dengan ${a}: ${a}x / ${a} = ${c} / ${a}, sehingga x = ${x}.` }; },
             // Sistem koordinat kartesius
-            () => { const x1 = randInt(-5, 5), y1 = randInt(-5, 5), x2 = randInt(-5, 5), y2 = randInt(-5, 5); return { question: `Berapakah jarak antara titik (${x1}, ${y1}) dan (${x2}, ${y2})? (bulatkan 2 desimal)`, answer: Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2), hint: "Gunakan rumus jarak: √((x2-x1)² + (y2-y1)²).", category: 'geometry', explanation: `Menggunakan rumus jarak antara dua titik: √((x2-x1)² + (y2-y1)²). Jadi, √((${x2}-${x1})² + (${y2}-${y1})²) = √(${Math.pow(x2-x1, 2)} + ${Math.pow(y2-y1, 2)}) = √${Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2)} = ${Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2)}.` }; },
+            () => { const x1 = randInt(-5, 5), y1 = randInt(-5, 5), x2 = randInt(-5, 5), y2 = randInt(-5, 5); return { question: `Berapakah jarak antara titik (${x1}, ${y1}) dan (${x2}, ${y2})? (bulatkan 2 desimal)`, answer: Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2), hint: "Gunakan rumus jarak: √((x2-x1)² + (y2-y1)²).", category: 'geometry', explanation: `Menggunakan rumus jarak antara dua titik: √((x2-x1)² + (y2-y1)²). Jadi, √((${x2}-${x1})² + (${y2}-${y1})²) = √(${Math.pow(x2-x1, 2)} + ${Math.pow(y2-y1, 2)}) = √${Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2)} ≈ ${Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)).toFixed(2)}.` }; },
             // Perbandingan senilai dan berbalik nilai
             () => { const speed1 = randInt(40, 60), time1 = randInt(2, 5); const speed2 = randInt(70, 90); return { question: `Jika sebuah mobil menempuh jarak dalam ${time1} jam dengan kecepatan ${speed1} km/jam, berapa waktu yang dibutuhkan jika kecepatannya ${speed2} km/jam? (Perbandingan berbalik nilai, bulatkan 1 desimal)`, answer: ((speed1 * time1) / speed2).toFixed(1), hint: "Jarak = kecepatan × waktu. Jarak konstan.", category: 'arithmetic', explanation: `Ini adalah perbandingan berbalik nilai. Jarak total = ${speed1} km/jam × ${time1} jam = ${speed1 * time1} km. Dengan kecepatan ${speed2} km/jam, waktu yang dibutuhkan adalah ${speed1 * time1} / ${speed2} = ${((speed1 * time1) / speed2).toFixed(1)} jam.` }; },
             // Persentase dan diskon
@@ -3050,34 +3150,8 @@
             () => { const data = shuffleArray([1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 5, 5, 6, 6, 7]).slice(0, randInt(8, 12)); const mode = data.sort((a,b)=>data.filter(v=>v===a).length-data.filter(v=>v===b).length).pop(); return { question: `Berapakah modus dari data: ${data.join(', ')}?`, answer: mode, hint: "Modus adalah nilai yang paling sering muncul.", category: 'arithmetic', explanation: `Modus adalah angka yang paling sering muncul dalam sebuah kumpulan data. Dalam data ${data.join(', ')}, angka ${mode} muncul paling sering.` }; }
         ];
 
-        const extremeQuestions = [
-            // Teori bilangan (prima, modulo, kongruensi)
-            () => { const n = randInt(10, 20), divisor = randInt(2, 7); return { question: `Berapakah sisa pembagian (modulo) ${n} dibagi ${divisor}? (${n} mod ${divisor})`, answer: n % divisor, hint: "Sisa pembagian.", category: 'arithmetic', explanation: `${n} mod ${divisor} adalah sisa ketika ${n} dibagi dengan ${divisor}. ${n} = ${Math.floor(n/divisor)} × ${divisor} + ${n % divisor}. Jadi, sisanya adalah ${n % divisor}.` }; },
-            // Kombinatorika lanjutan (inclusion-exclusion) - simplified
-            () => { const a = randInt(10, 20), b = randInt(10, 20), intersection = randInt(2, 8); return { question: `Dalam sebuah kelas, ${a} siswa suka matematika, ${b} siswa suka sains, dan ${intersection} siswa suka keduanya. Berapa total siswa yang suka matematika ATAU sains?`, answer: a + b - intersection, hint: "Total = A + B - (A iris B).", category: 'arithmetic', explanation: `Gunakan prinsip inklusi-eksklusi: |A U B| = |A| + |B| - |A ∩ B|. Jadi, ${a} + ${b} - ${intersection} = ${a + b - intersection} siswa.` }; },
-            // Pembuktian matematika dasar - conceptual
-            () => { return { question: `Manakah pernyataan yang BENAR tentang bilangan prima?`, answer: "Bilangan prima memiliki tepat dua faktor.", hint: "Definisi bilangan prima.", category: 'arithmetic', options: ["Bilangan prima memiliki tepat dua faktor.", "Semua bilangan ganjil adalah prima.", "Bilangan prima selalu genap.", "Bilangan prima tidak bisa dibagi 1."], explanation: `Definisi bilangan prima adalah bilangan asli lebih dari 1 yang hanya memiliki dua faktor positif berbeda, yaitu 1 dan dirinya sendiri.` }; },
-            // Logika proposisional dan kuantor - conceptual
-            () => { return { question: `Jika P adalah "Hari ini hujan" dan Q adalah "Saya membawa payung", apa arti dari P → Q?`, answer: "Jika hari ini hujan, maka saya membawa payung.", hint: "P → Q berarti 'Jika P maka Q'.", category: 'algebra', options: ["Hari ini hujan dan saya membawa payung.", "Jika hari ini hujan, maka saya membawa payung.", "Hari ini tidak hujan atau saya membawa payung.", "Saya membawa payung jika dan hanya jika hari ini hujan."], explanation: `Pernyataan P → Q dalam logika berarti "Jika P maka Q". Jadi, "Jika hari ini hujan, maka saya membawa payung".` }; },
-            // Fungsi rekursif - simple sequence
-            () => { const a0 = randInt(1, 5); return { question: `Jika a_n = a_(n-1) + 2 dan a_0 = ${a0}, berapakah a_3?`, answer: a0 + 2 * 3, hint: "Hitung suku-suku secara berurutan: a1, a2, a3.", category: 'algebra', explanation: `a_0 = ${a0}. a_1 = a_0 + 2 = ${a0+2}. a_2 = a_1 + 2 = ${a0+4}. a_3 = a_2 + 2 = ${a0+6}.` }; },
-            // Persamaan fungsional - basic
-            () => { const k = randInt(2, 5); return { question: `Jika f(x + 1) = f(x) + ${k} dan f(0) = 1, berapakah f(3)?`, answer: 1 + k * 3, hint: "Temukan pola pertambahan nilai fungsi.", category: 'algebra', explanation: `f(0) = 1. f(1) = f(0) + ${k} = 1 + ${k}. f(2) = f(1) + ${k} = 1 + 2${k}. f(3) = f(2) + ${k} = 1 + 3${k} = ${1 + k*3}.` }; },
-            // Geometri sintetis dan pembuktian - conceptual
-            () => { return { question: `Sebuah teorema geometri menyatakan bahwa jumlah sudut dalam segitiga adalah 180°. Apakah ini berlaku untuk segitiga pada permukaan bola?`, answer: "Tidak", hint: "Geometri non-Euklides.", category: 'geometry', options: ["Ya", "Tidak", "Tergantung ukuran segitiga", "Hanya jika segitiga itu siku-siku"], explanation: `Tidak. Teorema jumlah sudut 180° berlaku dalam geometri Euclidean (bidang datar). Pada permukaan bola, jumlah sudut dalam segitiga selalu lebih besar dari 180°. Ini adalah bagian dari geometri non-Euclidean.` }; },
-            // Strategi permainan matematika (game theory sederhana)
-            () => { return { question: `Dalam permainan Nim (2 tumpukan, ambil 1 atau 2 korek api), jika Anda memiliki 2 tumpukan masing-masing 3 dan 3 korek api, apakah langkah pertama terbaik untuk menang jika Anda memulai?`, answer: "Ambil 1 korek api dari salah satu tumpukan", hint: "Bertujuan mencapai posisi kalah untuk lawan.", category: 'arithmetic', options: ["Ambil 1 korek api dari salah satu tumpukan", "Ambil 2 korek api dari salah satu tumpukan", "Ambil semua korek api dari satu tumpukan", "Tidak ada langkah pasti untuk menang"], explanation: `Posisi (3,3) adalah posisi menang bagi pemain yang memulai. Dengan mengambil 1 korek api dari salah satu tumpukan, Anda akan meninggalkan lawan dalam posisi (2,3) atau (3,2), yang merupakan posisi kalah (bagi lawan).` }; },
-            // Penerapan trigonometri dalam geometri
-            () => { const side = randInt(5, 10); const angleDeg = 60; const angleRad = angleDeg * Math.PI / 180; return { question: `Sebuah tangga sepanjang ${side} meter bersandar pada dinding membentuk sudut ${angleDeg}° dengan tanah. Berapakah tinggi dinding yang dicapai tangga? (bulatkan 2 desimal)`, answer: (side * Math.sin(angleRad)).toFixed(2), hint: "Gunakan fungsi sinus: sin(sudut) = tinggi/sisi miring.", category: 'geometry', explanation: `Ini membentuk segitiga siku-siku. Tinggi dinding (depan sudut) = panjang tangga (sisi miring) × sin(sudut). Jadi, ${side} × sin(${angleDeg}°) = ${side} × ${Math.sin(angleRad).toFixed(2)} = ${(side * Math.sin(angleRad)).toFixed(2)} meter.` }; },
-            // Soal logika cerita panjang - simplified
-            () => { return { question: `Ani, Budi, dan Cici punya hobi berbeda: membaca, melukis, dan memasak. Ani tidak suka memasak. Budi tidak suka membaca. Siapa yang suka melukis jika yang suka memasak adalah laki-laki?`, answer: "Ani", hint: "Gunakan eliminasi. Yang suka memasak adalah laki-laki, jadi bukan Ani atau Cici.", category: 'algebra', options: ["Ani", "Budi", "Cici", "Tidak dapat ditentukan"], explanation: `Jika yang suka memasak adalah laki-laki, maka yang suka memasak adalah Budi (karena Ani dan Cici adalah perempuan). Ani tidak suka memasak, dan Budi suka memasak (dari eliminasi). Jadi, Cici suka membaca, dan Ani suka melukis.` }; },
-            // Permutasi dan kombinasi ekstrem - harder combinatorics
-            () => { const n = randInt(4, 7); return { question: `Berapa banyak cara menyusun ${n} buku yang berbeda pada sebuah rak?`, answer: (function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n), hint: "Ini adalah soal permutasi (n!).", category: 'arithmetic', explanation: `Jumlah cara menyusun ${n} buku yang berbeda adalah ${n}! (n faktorial). ${n}! = ${Array.from({length:n}, (_,i)=>i+1).join(' × ')} = ${(function factorial(k) { return k === 0 ? 1 : k * factorial(k - 1); })(n)}.` }; },
-            // Teorema dasar peluang - conditional probability simplified
-            () => { const total = randInt(20, 30); const a = randInt(5, 10); const b = randInt(5, 10); const intersection = randInt(1, Math.min(a, b) - 1); return { question: `Dalam survei terhadap ${total} orang, ${a} suka kopi dan ${b} suka teh. Jika ${intersection} orang suka keduanya, berapa peluang seseorang suka kopi MENGINGAT mereka suka teh? (bulatkan 2 desimal)`, answer: (intersection / b).toFixed(2), hint: "P(A|B) = P(A ∩ B) / P(B).", category: 'arithmetic', explanation: `Peluang seseorang suka kopi MENGINGAT mereka suka teh adalah P(Kopi|Teh) = P(Kopi ∩ Teh) / P(Teh). Jumlah orang yang suka keduanya adalah ${intersection}. Jumlah orang yang suka teh adalah ${b}. Jadi, peluangnya adalah ${intersection}/${b} = ${(intersection/b).toFixed(2)}.` }; }
-        ];
-
-        function generateQuestion(difficulty) {
+        // Rename this function
+        function generateMathQuestion(difficulty) {
             let questionBank;
             switch(difficulty) {
                 case 'easy': questionBank = easyQuestions; break;
@@ -3087,33 +3161,163 @@
                 default: questionBank = easyQuestions;
             }
 
-            // Filter out already used questions for the current difficulty
+            // Filter out already used questions for the current difficulty and category
             let availableIndices = Array.from({length: questionBank.length}, (_, i) => i)
-                .filter(i => !usedQuestions.has(`${difficulty}-${i}`));
+                .filter(i => !usedQuestions.has(`math-${difficulty}-${i}`)); // MODIFIED KEY
 
             // If all questions for this difficulty have been used, reset the pool for this difficulty
             if (availableIndices.length === 0) {
                 for (let i = 0; i < questionBank.length; i++) {
-                    usedQuestions.delete(`${difficulty}-${i}`);
+                    usedQuestions.delete(`math-${difficulty}-${i}`); // MODIFIED KEY
                 }
                 availableIndices = Array.from({length: questionBank.length}, (_, i) => i);
             }
 
             const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-            usedQuestions.add(`${difficulty}-${randomIndex}`);
+            usedQuestions.add(`math-${difficulty}-${randomIndex}`); // MODIFIED KEY
             
             const questionGenerator = questionBank[randomIndex];
             const generated = questionGenerator();
             
-            // Re-engineer the explanation if it's a function (for dynamic content)
             if (typeof generated.explanation === 'function') {
                 const q = generated.question;
                 const a = generated.answer;
-                // Extract numbers (integers or decimals) from question for dynamic explanation if needed
                 const numbersInQuestion = (q.match(/-?\d+(\.\d+)?/g) || []).map(Number);
                 generated.explanation = generated.explanation(q, a, numbersInQuestion);
             }
 
+            return generated;
+        }
+
+        // NEW: Trivia Questions Data (Populate with your provided questions)
+        const triviaQuestions = {
+            easy: [
+                { question: "Apa ibu kota Indonesia?", answer: "Jakarta", hint: "Kota metropolitan terbesar di Pulau Jawa.", category: 'trivia', explanation: "Jakarta adalah ibu kota dan kota terbesar di Indonesia." },
+                { question: "Warna apakah yang terbentuk dari campuran merah dan kuning?", answer: "Oranye", hint: "Warna buah jeruk.", category: 'trivia', explanation: "Merah dan kuning adalah warna primer yang jika dicampur akan menghasilkan oranye." },
+                { question: "Planet terdekat dengan Matahari adalah?", answer: "Merkurius", hint: "Planet terkecil di tata surya kita.", category: 'trivia', explanation: "Merkurius adalah planet terdekat dari Matahari, dan juga yang terkecil di Tata Surya." },
+                { question: "Hewan darat tercepat di dunia adalah?", answer: "Citah", hint: "Dikenal dengan pola totol khasnya.", category: 'trivia', explanation: "Citah (cheetah) dapat berlari dengan kecepatan hingga 112 km/jam dalam jarak pendek." },
+                { question: "Siapa nama tikus yang menjadi karakter utama Disney?", answer: "Mickey Mouse", hint: "Dia punya pacar bernama Minnie.", category: 'trivia', explanation: "Mickey Mouse adalah salah satu karakter paling ikonik dari Walt Disney." },
+                { question: "Lagu 'Balonku Ada Lima' adalah jenis lagu apa?", answer: "Anak-anak", hint: "Sering dinyanyikan di taman kanak-kanak.", category: 'trivia', explanation: "Lagu 'Balonku Ada Lima' adalah salah satu lagu anak-anak yang sangat populer di Indonesia." },
+                { question: "Buah yang kaya vitamin C dan rasanya asam adalah?", answer: "Jeruk", hint: "Warnanya sering dikaitkan dengan warnanya sendiri.", category: 'trivia', explanation: "Jeruk dikenal karena kandungan vitamin C-nya yang tinggi dan rasa asamnya." },
+                { question: "Bendera Indonesia memiliki dua warna. Apa saja?", answer: "Merah Putih", hint: "Merah melambangkan keberanian, putih kesucian.", category: 'trivia', explanation: "Bendera Indonesia, Sang Saka Merah Putih, terdiri dari dua warna, merah di atas dan putih di bawah." },
+                { question: "Siapakah penemu bola lampu pijar?", answer: "Thomas Edison", hint: "Dia juga punya banyak paten lainnya.", category: 'trivia', explanation: "Thomas Alva Edison adalah penemu dan pengusaha yang mengembangkan banyak perangkat penting, salah satunya bola lampu pijar." },
+                { question: "Berapa jumlah jari di satu tangan manusia?", answer: "5", hint: "Termasuk ibu jari.", category: 'trivia', explanation: "Setiap tangan manusia normal memiliki 5 jari." },
+                { question: "Hari Kemerdekaan Indonesia diperingati setiap tanggal?", answer: "17 Agustus", hint: "Bulan kedelapan dalam setahun.", category: 'trivia', explanation: "Indonesia merayakan Hari Kemerdekaan setiap tanggal 17 Agustus." },
+                { question: "Alat musik yang dimainkan dengan cara digesek adalah?", answer: "Biola", hint: "Memiliki empat senar dan biasanya dimainkan di orkestra.", category: 'trivia', explanation: "Biola adalah alat musik senar yang dimainkan dengan menggesekkan busur di senarnya." },
+                { question: "Makanan tradisional Italia yang terbuat dari adonan tipis dengan topping adalah?", answer: "Pizza", hint: "Biasanya berbentuk bulat dan dipanggang.", category: 'trivia', explanation: "Pizza adalah hidangan khas Italia yang kini populer di seluruh dunia." },
+                { question: "Bahasa resmi yang digunakan di Jepang adalah?", answer: "Jepang", hint: "Negara matahari terbit.", category: 'trivia', explanation: "Bahasa Jepang adalah bahasa nasional dan resmi Jepang." },
+                { question: "Fakta: Beruang kutub memiliki kulit berwarna apa di bawah bulu putihnya?", answer: "Hitam", hint: "Membantu menyerap panas matahari.", category: 'trivia', explanation: "Kulit beruang kutub sebenarnya berwarna hitam, yang membantu mereka menyerap panas dan tetap hangat di lingkungan dingin." },
+                { question: "Orang yang pekerjaannya mendesain bangunan disebut?", answer: "Arsitek", hint: "Mereka membuat denah.", category: 'trivia', explanation: "Seorang arsitek adalah profesional yang merencanakan dan mendesain bangunan." },
+                { question: "Siapakah ilmuwan terkenal yang mengembangkan Teori Relativitas?", answer: "Albert Einstein", hint: "Dia dikenal dengan rambut acak-acakannya.", category: 'trivia', explanation: "Albert Einstein adalah fisikawan teoretis yang mengembangkan teori relativitas." },
+                { question: "Berapa pemain dalam satu tim sepak bola di lapangan?", answer: "11", hint: "Termasuk penjaga gawang.", category: 'trivia', explanation: "Setiap tim sepak bola memiliki 11 pemain di lapangan, termasuk penjaga gawang." },
+                { question: "Bentuk geometri dengan tiga sisi dan tiga sudut adalah?", answer: "Segitiga", hint: "Ada banyak jenisnya: sama sisi, siku-siku, dll.", category: 'trivia', explanation: "Segitiga adalah poligon dengan tiga sisi dan tiga sudut." },
+                { question: "Air membeku pada suhu berapa derajat Celcius?", answer: "0", hint: "Titik beku air.", category: 'trivia', explanation: "Air murni membeku pada 0 derajat Celcius atau 32 derajat Fahrenheit pada tekanan standar." }
+            ],
+            medium: [
+                { question: "Perang Dunia I dimulai pada tahun?", answer: "1914", hint: "Era sebelum Perang Dunia II.", category: 'trivia', explanation: "Perang Dunia I dimulai pada 28 Juli 1914 dan berakhir pada 11 November 1918." },
+                { question: "Peribahasa 'Ada udang di balik batu' berarti?", answer: "Ada maksud tersembunyi", hint: "Tidak tulus atau ada kepentingan lain.", category: 'trivia', explanation: "Peribahasa 'Ada udang di balik batu' berarti ada maksud atau niat tersembunyi." },
+                { question: "Planet yang dikenal dengan cincinnya yang indah adalah?", answer: "Saturnus", hint: "Planet keenam dari Matahari.", category: 'trivia', explanation: "Saturnus terkenal dengan sistem cincinnya yang besar dan mencolok, yang sebagian besar terbuat dari partikel es." },
+                { question: "Siapakah sutradara film 'Titanic'?", answer: "James Cameron", hint: "Dia juga menyutradarai 'Avatar'.", category: 'trivia', explanation: "James Cameron adalah sutradara, penulis skenario, dan produser di balik film epik 'Titanic'." },
+                { question: "Apa organ terbesar dalam tubuh manusia?", answer: "Kulit", hint: "Menutupi seluruh tubuh kita.", category: 'trivia', explanation: "Kulit adalah organ terbesar dalam tubuh manusia, berfungsi sebagai pelindung." },
+                { question: "Apakah nama protokol yang digunakan untuk mengakses halaman web?", answer: "HTTP", hint: "Sering terlihat di awal alamat situs web.", category: 'trivia', explanation: "HTTP (Hypertext Transfer Protocol) adalah protokol aplikasi untuk sistem informasi terdistribusi, kolaboratif, dan hipermedia." },
+                { question: "Apa ibu kota dari Mesir Kuno?", answer: "Memphis", hint: "Terletak di dekat Delta Sungai Nil.", category: 'trivia', explanation: "Memphis adalah ibu kota kuno Aneb-Hetch, nomen pertama Mesir Hilir, dan ibu kota Kerajaan Lama Mesir." },
+                { question: "Apa istilah untuk fenomena iklim di mana permukaan air laut Pasifik timur menjadi lebih hangat?", answer: "El Nino", hint: "Memengaruhi cuaca global.", category: 'trivia', explanation: "El Niño adalah pola iklim yang menggambarkan pemanasan suhu permukaan laut yang tidak biasa di Samudra Pasifik tropis tengah dan timur." },
+                { question: "Apa nama alat ukur tekanan udara?", answer: "Barometer", hint: "Digunakan dalam meteorologi.", category: 'trivia', explanation: "Barometer adalah instrumen ilmiah yang digunakan untuk mengukur tekanan udara." },
+                { question: "Apa sebutan untuk bentuk seni yang dibuat dari bahan-bahan yang ditemukan, seperti barang bekas?", answer: "Seni daur ulang", hint: "Contohnya Patung dari botol plastik.", category: 'trivia', explanation: "Seni daur ulang adalah bentuk seni di mana seniman membuat karya seni dari bahan-bahan yang dibuang atau bekas." },
+                { question: "Hewan apa yang memiliki jantung di kepalanya?", answer: "Udang", hint: "Makhluk laut bercangkang keras.", category: 'trivia', explanation: "Udang memiliki jantung yang terletak di kepala mereka." },
+                { question: "Siapa penulis novel 'Laskar Pelangi'?", answer: "Andrea Hirata", hint: "Ceritanya tentang anak-anak di Belitung.", category: 'trivia', explanation: "Andrea Hirata adalah penulis Indonesia yang terkenal dengan seri novel 'Laskar Pelangi'." },
+                { question: "Apa nama bunga nasional Indonesia yang sering disebut 'Puspa Bangsa'?", answer: "Melati putih", hint: "Warnanya putih dan harum.", category: 'trivia', explanation: "Melati putih (Jasminum sambac) adalah salah satu dari tiga bunga nasional Indonesia, dan secara resmi disebut Puspa Bangsa." },
+                { question: "Apa nama mata uang Jepang?", answer: "Yen", hint: "Simbolnya seperti huruf Y dengan dua garis.", category: 'trivia', explanation: "Yen adalah mata uang resmi Jepang." },
+                { question: "Bagian otak yang bertanggung jawab untuk memori dan pembelajaran adalah?", answer: "Hippocampus", hint: "Terletak di lobus temporal.", category: 'trivia', explanation: "Hippocampus adalah bagian kompleks dari otak yang memainkan peran utama dalam pembelajaran dan memori." },
+                { question: "Apakah nama tarian tradisional Bali yang menceritakan kisah Ramayana?", answer: "Tari Kecak", hint: "Tarian api dengan suara 'cak cak cak'.", category: 'trivia', explanation: "Tari Kecak adalah tarian khas Bali yang sebagian besar penarinya adalah laki-laki dan tidak menggunakan iringan alat musik, melainkan hanya suara 'cak-cak-cak' dari para penari." },
+                { question: "Siapa tokoh wanita pertama yang memenangkan Hadiah Nobel?", answer: "Marie Curie", hint: "Dia memenangkan dua Nobel di bidang berbeda.", category: 'trivia', explanation: "Marie Curie adalah wanita pertama yang memenangkan Hadiah Nobel, dan orang pertama serta satu-satunya yang memenangkan Hadiah Nobel dalam dua bidang ilmiah berbeda (Fisika dan Kimia)." },
+                { question: "Festival warna Holi berasal dari negara mana?", answer: "India", hint: "Dirayakan di musim semi.", category: 'trivia', explanation: "Holi adalah festival musim semi Hindu yang dirayakan secara luas di India." },
+                { question: "Logo perusahaan 'Nike' dikenal dengan simbol?", answer: "Swoosh", hint: "Mirip tanda centang.", category: 'trivia', explanation: "Logo Nike adalah 'Swoosh', yang dirancang oleh Carolyn Davidson pada tahun 1971." },
+                { question: "Apa nama satuan dasar waktu dalam Sistem Internasional (SI)?", answer: "Detik", hint: "Ada 60 detik dalam satu menit.", category: 'trivia', explanation: "Detik adalah satuan waktu dasar dalam Sistem Satuan Internasional (SI)." }
+            ],
+            hard: [
+                { question: "Apa teori yang menjelaskan bahwa alam semesta berasal dari ledakan tunggal?", answer: "Teori Big Bang", hint: "Terjadi sekitar 13.8 miliar tahun yang lalu.", category: 'trivia', explanation: "Teori Big Bang adalah model kosmologi yang paling dominan untuk menjelaskan perkembangan alam semesta dari keadaan awal yang sangat padat dan panas." },
+                { question: "Siapa ilmuwan yang memenangkan Hadiah Nobel Fisika untuk penemuan efek fotolistrik?", answer: "Albert Einstein", hint: "Selain teori relativitas.", category: 'trivia', explanation: "Meskipun paling terkenal dengan teori relativitasnya, Albert Einstein menerima Hadiah Nobel Fisika pada tahun 1921 untuk penjelasannya tentang efek fotolistrik." },
+                { question: "Perang Salib berlangsung selama kurang lebih berapa abad?", answer: "2", hint: "Dari abad ke-11 hingga ke-13.", category: 'trivia', explanation: "Perang Salib adalah serangkaian perang agama yang berlangsung selama kurang lebih dua abad, dari akhir abad ke-11 hingga akhir abad ke-13." },
+                { question: "Apa nama komponen terkecil dari suatu unsur yang masih mempertahankan sifat-sifat kimia unsur tersebut?", answer: "Atom", hint: "Terdiri dari proton, neutron, dan elektron.", category: 'trivia', explanation: "Atom adalah satuan materi terkecil yang masih mempertahankan sifat-sifat kimia dari suatu unsur." },
+                { question: "Filsuf Yunani kuno yang menulis 'Republik' dan mendirikan Akademi di Athena adalah?", answer: "Plato", hint: "Murid Socrates.", category: 'trivia', explanation: "Plato adalah seorang filsuf di Yunani Klasik, pendiri sekolah Platonis filsafat, dan Akademi di Athena." },
+                { question: "Apakah nama bahasa kuno yang menjadi dasar bagi banyak bahasa Romawi modern?", answer: "Latin", hint: "Digunakan di Kekaisaran Romawi.", category: 'trivia', explanation: "Bahasa Latin adalah bahasa Italic yang awalnya digunakan di Latium, dan kemudian menjadi bahasa resmi Kekaisaran Romawi." },
+                { question: "Apa yang dimaksud dengan 'El Niño-Southern Oscillation' (ENSO)?", answer: "Fenomena iklim", hint: "Termasuk El Niño dan La Niña.", category: 'trivia', explanation: "El Niño-Southern Oscillation (ENSO) adalah pola iklim yang melibatkan perubahan suhu permukaan laut di Samudra Pasifik tropis dan tekanan udara di atasnya, yang memengaruhi cuaca global." },
+                { question: "Bagian tubuh manusia yang bertugas memompa darah ke seluruh tubuh adalah?", answer: "Jantung", hint: "Berada di rongga dada.", category: 'trivia', explanation: "Jantung adalah organ otot berongga yang berfungsi memompa darah melalui pembuluh darah oleh kontraksi berirama." },
+                { question: "Siapakah pemimpin Revolusi Kuba bersama Fidel Castro?", answer: "Che Guevara", hint: "Dokter dan tokoh revolusi.", category: 'trivia', explanation: "Ernesto 'Che' Guevara adalah seorang revolusioner Marxis, dokter, penulis, pemimpin gerilya, diplomat dan ahli teori militer terkemuka." },
+                { question: "Sistem pemerintahan di mana kekuasaan tertinggi berada di tangan rakyat dan dijalankan oleh perwakilan terpilih disebut?", answer: "Demokrasi", hint: "Pemerintahan dari rakyat, oleh rakyat, untuk rakyat.", category: 'trivia', explanation: "Demokrasi adalah sistem pemerintahan di mana warga negara menjalankan kekuasaan baik secara langsung atau melalui perwakilan yang dipilih dari antara mereka sendiri." },
+                { question: "Apakah yang menjadi penyebab utama pemanasan global?", answer: "Gas rumah kaca", hint: "Seperti karbon dioksida dan metana.", category: 'trivia', explanation: "Penyebab utama pemanasan global adalah peningkatan konsentrasi gas rumah kaca di atmosfer akibat aktivitas manusia, terutama pembakaran bahan bakar fosil." },
+                { question: "Tulang terbesar dalam tubuh manusia adalah?", answer: "Femur", hint: "Tulang paha.", category: 'trivia', explanation: "Femur, atau tulang paha, adalah tulang terbesar, terpanjang, dan terkuat di tubuh manusia." },
+                { question: "Sistem kalender yang digunakan di sebagian besar dunia saat ini adalah kalender?", answer: "Gregorian", hint: "Dinamai sesuai nama Paus.", category: 'trivia', explanation: "Kalender Gregorian adalah kalender yang digunakan di sebagian besar dunia, yang merupakan modifikasi dari Kalender Julian." },
+                { question: "Jika semua burung bisa terbang (P) dan Elang adalah burung (Q), maka Elang bisa terbang. Ini adalah contoh penalaran apa?", answer: "Deduktif", hint: "Dari umum ke khusus.", category: 'trivia', explanation: "Ini adalah contoh penalaran deduktif, di mana kesimpulan logis ditarik dari premis-premis umum." },
+                { question: "Siapa penulis epik 'Odyssey' dan 'Iliad'?", answer: "Homer", hint: "Penyair buta dari Yunani kuno.", category: 'trivia', explanation: "Homer adalah nama yang secara tradisional dikaitkan dengan penulis epik Yunani kuno, 'Iliad' dan 'Odyssey'." },
+                { question: "Agama terbesar di dunia berdasarkan jumlah pengikut adalah?", answer: "Kekristenan", hint: "Memiliki pengikut sekitar 2,4 miliar.", category: 'trivia', explanation: "Kekristenan adalah agama terbesar di dunia dengan lebih dari 2,4 miliar pengikut." },
+                { question: "Simbol 'Σ' dalam matematika mewakili?", answer: "Penjumlahan", hint: "Sigma besar.", category: 'trivia', explanation: "Simbol 'Σ' (sigma besar) dalam matematika digunakan untuk mewakili penjumlahan serangkaian suku." },
+                { question: "Dewi kebijaksanaan dan perang dalam mitologi Yunani adalah?", answer: "Athena", hint: "Lahir dari kepala Zeus.", category: 'trivia', explanation: "Athena adalah dewi kebijaksanaan, perang, dan kerajinan tangan dalam mitologi Yunani." },
+                { question: "Negara yang memiliki Jalur Gaza dan Tepi Barat sebagai wilayah sengketa adalah?", answer: "Israel", hint: "Konflik di Timur Tengah.", category: 'trivia', explanation: "Jalur Gaza dan Tepi Barat adalah wilayah sengketa utama dalam konflik Israel-Palestina." },
+                { question: "Institusi keuangan internasional yang didirikan untuk mempromosikan kerja sama moneter global adalah?", answer: "Dana Moneter Internasional (IMF)", hint: "Bermitra dengan Bank Dunia.", category: 'trivia', explanation: "Dana Moneter Internasional (IMF) adalah organisasi internasional yang dibentuk untuk membina kerja sama moneter global, mengamankan stabilitas keuangan, memfasilitasi perdagangan internasional, mempromosikan lapangan kerja dan pertumbuhan ekonomi yang tinggi, serta mengurangi kemiskinan di seluruh dunia." }
+            ],
+            extreme: [
+                { question: "Apa nama anagram dari 'dormitory' yang berarti 'ruang tidur'?", answer: "dirty room", hint: "Ejaan ulang huruf-hurufnya.", category: 'trivia', explanation: "Anagram dari 'dormitory' adalah 'dirty room'." },
+                { question: "Jika suatu pernyataan benar, tetapi negasinya juga tidak dapat dibuktikan salah, ini dikenal sebagai?", answer: "Teorema Ketidaklengkapan Gödel", hint: "Dasar dari meta-matematika.", category: 'trivia', explanation: "Teorema Ketidaklengkapan Gödel (khususnya teorema pertama) menyatakan bahwa dalam setiap sistem formal yang cukup kuat untuk menggambarkan aritmetika, akan selalu ada pernyataan yang benar tetapi tidak dapat dibuktikan dalam sistem itu sendiri." },
+                { question: "Dalam paradoks ini, sebuah kapal yang semua bagiannya telah diganti masih dianggap kapal yang sama. Apa nama paradoks tersebut?", answer: "Paradox of Theseus", hint: "Filsafat identitas.", category: 'trivia', explanation: "Paradox of Theseus adalah teka-teki pemikiran tentang identitas suatu objek dari waktu ke waktu, yang mempertanyakan apakah suatu objek yang semua komponennya telah diganti tetap merupakan objek yang sama." },
+                { question: "Mitos yang menyatakan bahwa 'manusia hanya menggunakan 10% otaknya' adalah?", answer: "Mitos ilmiah", hint: "Telah dibantah oleh sains modern.", category: 'trivia', explanation: "Mitos bahwa manusia hanya menggunakan 10% otaknya adalah mitos ilmiah yang populer tetapi tidak berdasar. Pemindaian otak menunjukkan bahwa sebagian besar otak aktif bahkan saat istirahat." },
+                { question: "Bahasa apakah yang digunakan dalam komunikasi rahasia, di mana setiap huruf diganti dengan huruf lain secara sistematis?", answer: "Cipher", hint: "Contohnya Caesar cipher.", category: 'trivia', explanation: "Cipher adalah algoritma untuk melakukan enkripsi atau dekripsi, yaitu serangkaian langkah yang dapat diikuti sebagai prosedur." },
+                { question: "Konsep dalam fisika kuantum yang menyatakan bahwa partikel dapat berada di banyak keadaan sekaligus sampai diukur disebut?", answer: "Superposisi", hint: "Sering diilustrasikan dengan kucing Schrödinger.", category: 'trivia', explanation: "Superposisi kuantum adalah prinsip dasar mekanika kuantum yang menyatakan bahwa sistem kuantum (seperti partikel) dapat berada dalam beberapa keadaan sekaligus sampai dilakukan pengukuran." },
+                { question: "Apa nama konstanta matematika yang merupakan basis dari logaritma alami, kira-kira 2.71828?", answer: "e", hint: "Dikenal sebagai bilangan Euler.", category: 'trivia', explanation: "Konstanta matematika 'e', juga dikenal sebagai bilangan Euler, adalah basis dari logaritma alami. Nilainya kira-kira 2.71828." },
+                { question: "Dalam epos Mahabharata, siapa nama ksatria panah yang merupakan putra Dewi Kunti dan Dewa Indra?", answer: "Arjuna", hint: "Salah satu Pandawa.", category: 'trivia', explanation: "Arjuna adalah salah satu dari lima Pandawa, putra dari Dewi Kunti dan Dewa Indra, dan dikenal sebagai pemanah ulung dalam epos Mahabharata." },
+                { question: "Apakah nama eksperimen psikologi kontroversial di mana subjek diberi peran penjaga dan tahanan?", answer: "Eksperimen Penjara Stanford", hint: "Dilakukan di Universitas Stanford.", category: 'trivia', explanation: "Eksperimen Penjara Stanford adalah studi psikologis yang kontroversial tentang efek psikologis kekuasaan dan kepasifan dalam penjara." },
+                { question: "Sebuah keluarga terdiri dari ayah, ibu, dan anak-anak. Jika ayah adalah anak dari kakek Anda, dan ibu adalah anak dari nenek Anda (tetapi bukan kakek Anda), apa hubungan Anda dengan anak-anak mereka?", answer: "Saudara sepupu", hint: "Pertimbangkan silsilah keluarga.", category: 'trivia', explanation: "Jika ayah mereka adalah anak kakek Anda, dan ibu mereka adalah anak nenek Anda (tetapi bukan kakek Anda), berarti ayah dan ibu mereka adalah paman/bibi Anda dari sisi ayah dan ibu yang berbeda. Oleh karena itu, anak-anak mereka adalah saudara sepupu Anda." },
+                { question: "Apa makna dari simbol ouroboros?", answer: "Siklus kekal", hint: "Ular yang memakan ekornya sendiri.", category: 'trivia', explanation: "Ouroboros adalah simbol kuno yang menggambarkan ular atau naga yang memakan ekornya sendiri, melambangkan siklus kekal, kelahiran kembali, dan kesatuan alam semesta." },
+                { question: "Persamaan gelombang Erwin Schrödinger menjelaskan perilaku apa?", answer: "Partikel subatomik", hint: "Fundamental dalam mekanika kuantum.", category: 'trivia', explanation: "Persamaan gelombang Schrödinger adalah persamaan matematika yang menjelaskan bagaimana keadaan kuantum suatu sistem fisik berubah seiring waktu." },
+                { question: "Apa nama paradoks perjalanan waktu di mana Anda mencegah kakek Anda bertemu nenek Anda?", answer: "Paradox Kakek", hint: "Menciptakan kontradiksi logis.", category: 'trivia', explanation: "Paradox Kakek adalah sebuah paradoks perjalanan waktu di mana keberadaan penjelajah waktu bergantung pada peristiwa masa lalu yang akan ia ubah." },
+                { question: "Peradaban kuno yang dipercaya menghilang secara misterius di Laut Mediterania adalah?", answer: "Atlantis", hint: "Disebutkan oleh Plato.", category: 'trivia', explanation: "Atlantis adalah kota fiksi yang disebutkan dalam tulisan Plato, yang konon hilang di bawah laut." },
+                { question: "Dalam logika matematika, simbol '∀' berarti?", answer: "Untuk semua", hint: "Kuantor universal.", category: 'trivia', explanation: "Simbol '∀' adalah kuantor universal, yang berarti 'untuk semua' atau 'untuk setiap'." },
+                { question: "Fenomena di mana gravitasi sangat kuat sehingga tidak ada, bahkan cahaya sekalipun, yang dapat lolos disebut?", answer: "Lubang hitam", hint: "Terbentuk dari sisa-sisa bintang besar.", category: 'trivia', explanation: "Lubang hitam adalah wilayah ruang-waktu di mana gravitasi sangat kuat sehingga tidak ada partikel atau radiasi elektromagnetik seperti cahaya yang dapat keluar darinya." },
+                { question: "Bidang studi yang menggabungkan prinsip-prinsip fisika untuk menjelaskan fenomena seni adalah?", answer: "Fisika seni", hint: "Misalnya, akustik dalam musik atau optik dalam lukisan.", category: 'trivia', explanation: "Fisika seni adalah bidang interdisipliner yang menganalisis prinsip-prinsip fisika di balik seni dan kreativitas artistik, seperti akustik, optik, mekanika, dan termodinamika." },
+                { question: "Konsep dalam kosmologi yang menyatakan bahwa ada banyak alam semesta lain di luar alam semesta kita disebut?", answer: "Multiverse", hint: "Hipotesis alam semesta paralel.", category: 'trivia', explanation: "Hipotesis multiverse adalah gagasan bahwa alam semesta kita adalah salah satu dari banyak alam semesta yang ada, membentuk struktur yang lebih besar yang disebut multiverse." },
+                { question: "Berapa jumlah planet dalam sistem tata surya kita saat ini, menurut definisi IAU?", answer: "8", hint: "Pluto tidak lagi dianggap planet penuh.", category: 'trivia', explanation: "Berdasarkan definisi International Astronomical Union (IAU) tahun 2006, ada 8 planet di Tata Surya kita (Merkurius, Venus, Bumi, Mars, Jupiter, Saturnus, Uranus, Neptunus)." },
+                { question: "Siapakah penemu kalkulus secara independen dari Isaac Newton?", answer: "Gottfried Leibniz", hint: "Matematikawan dan filsuf Jerman.", category: 'trivia', explanation: "Gottfried Wilhelm Leibniz adalah seorang polimatik Jerman yang mengembangkan kalkulus secara independen dari Sir Isaac Newton." }
+            ]
+        };
+
+        // This is the new master question generator
+        function generateQuestion(category, difficulty) {
+            if (category === 'math') {
+                return generateMathQuestion(difficulty);
+            } else if (category === 'trivia') {
+                return generateTriviaQuestion(difficulty);
+            }
+            // Fallback
+            return generateMathQuestion('easy');
+        }
+
+        // NEW: Trivia question generator
+        function generateTriviaQuestion(difficulty) {
+            let questionBank;
+            switch(difficulty) {
+                case 'easy': questionBank = triviaQuestions.easy; break;
+                case 'medium': questionBank = triviaQuestions.medium; break;
+                case 'hard': questionBank = triviaQuestions.hard; break;
+                case 'extreme': questionBank = triviaQuestions.extreme; break;
+                default: questionBank = triviaQuestions.easy;
+            }
+
+            let availableIndices = Array.from({length: questionBank.length}, (_, i) => i)
+                .filter(i => !usedQuestions.has(`trivia-${difficulty}-${i}`));
+
+            if (availableIndices.length === 0) {
+                for (let i = 0; i < questionBank.length; i++) {
+                    usedQuestions.delete(`trivia-${difficulty}-${i}`);
+                }
+                availableIndices = Array.from({length: questionBank.length}, (_, i) => i);
+            }
+
+            const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            usedQuestions.add(`trivia-${difficulty}-${randomIndex}`);
+            
+            const generated = questionBank[randomIndex];
+            
             if (useOptions) {
                 generated.options = generateOptions(generated.answer, generated.category);
             }
@@ -3125,38 +3329,40 @@
             const options = [correctAnswer];
             const answerType = typeof correctAnswer;
 
-            // Generate deceptive numerical options
-            if (answerType === 'number') {
+            // Generate numerical options (for math questions or trivia with numerical answers)
+            if (answerType === 'number' || (!isNaN(parseFloat(correctAnswer)) && isFinite(correctAnswer))) {
                 const num = parseFloat(correctAnswer);
-                let range = Math.max(1, Math.abs(num * 0.1)); // Smaller range for more deceptive options
-                if (num === 0) range = 1; // Handle 0 specifically to avoid 0 range
+                let range = Math.max(1, Math.abs(num * 0.1)); 
+                if (num === 0) range = 1; 
 
                 while (options.length < 4) {
                     let option;
-                    let typeOfDeception = randInt(1, 3); // 1: simple offset, 2: slightly larger/smaller, 3: common mistake
+                    let typeOfDeception = randInt(1, 3);
                     
                     if (typeOfDeception === 1) {
                         option = (Math.random() > 0.5) ? num + randInt(1, 2) * range / 2 : num - randInt(1, 2) * range / 2;
                     } else if (typeOfDeception === 2) {
                         option = (Math.random() > 0.5) ? num + randInt(1, 3) * range : num - randInt(1, 3) * range;
-                    } else { // common mistake type
-                        // Specific common mistakes based on category
+                    } else {
                         if (category === 'arithmetic') {
-                            if (num % 2 === 0 && num > 0) { // e.g., for division questions, options might be off by 1
+                            if (num % 2 === 0 && num > 0) {
                                 option = num + (Math.random() > 0.5 ? 1 : -1);
                             } else {
-                                option = num * (Math.random() > 0.5 ? 2 : 0.5); // multiplication/division errors
+                                option = num * (Math.random() > 0.5 ? 2 : 0.5);
                             }
-                        } else if (category === 'geometry' && num > 0) { // e.g., area vs perimeter, or small calculation error
-                            option = num + (Math.random() > 0.5 ? 0.01 : -0.01); // slight precision error
-                        } else if (category === 'algebra' && num !== 0) { // e.g., sign errors
+                        } else if (category === 'geometry' && num > 0) {
+                            option = num + (Math.random() > 0.5 ? 0.01 : -0.01);
+                        } else if (category === 'algebra' && num !== 0) {
                             option = -num;
-                        } else {
+                        } else if (category === 'trivia') { // NEW: Deception for numerical trivia
+                             option = num + (Math.random() > 0.5 ? randInt(1, 5) : -randInt(1, 5));
+                             if (num > 1000) option = num + (Math.random() > 0.5 ? randInt(10, 100) : -randInt(10, 100)); // Larger offset for bigger numbers
+                        }
+                        else {
                             option = (Math.random() > 0.5) ? num + randInt(1, 2) * range : num - randInt(1, 2) * range;
                         }
                     }
 
-                    // Ensure numerical answers are rounded appropriately if the correct answer is
                     if (Number.isInteger(num)) {
                         option = Math.round(option);
                     } else {
@@ -3164,49 +3370,112 @@
                         option = parseFloat(option.toFixed(decimalPlaces));
                     }
                     
-                    // Ensure options are distinct and not equal to the correct answer
-                    if (!options.includes(option) && Math.abs(option - num) > 0.001) { // Use tolerance for float comparison
+                    if (!options.includes(option) && Math.abs(option - num) > 0.001) {
                         options.push(option);
                     }
                 }
             } 
-            // Generate deceptive text options
+            // Generate text options
             else { 
                 const correctStr = correctAnswer.toString().toLowerCase();
                 let similarOptions = new Set();
                 
                 // Add variations: typo, slight modification, opposite, related term
-                similarOptions.add(correctStr.split('').reverse().join('')); // Reversed string
-                similarOptions.add(correctStr.substring(0, correctStr.length - 1) + String.fromCharCode(correctStr.charCodeAt(correctStr.length - 1) + 1)); // Last char + 1
-                similarOptions.add(correctStr.substring(0, correctStr.length - 1) + String.fromCharCode(correctStr.charCodeAt(correctStr.length - 1) - 1)); // Last char - 1
+                // Ensure variety for trivia questions
+                const specificOptions = {
+                    "jakarta": ["bandung", "surabaya", "semarang", "medan"],
+                    "oranye": ["hijau", "ungu", "biru", "merah muda"],
+                    "merkurius": ["venus", "mars", "bumi", "jupiter"],
+                    "citah": ["singa", "harimau", "macan tutul", "serigala"],
+                    "mickey mouse": ["donald duck", "goofy", "pluto", "minnie mouse"],
+                    "anak-anak": ["dewasa", "remaja", "balita", "populer"],
+                    "jeruk": ["apel", "pisang", "mangga", "anggur"],
+                    "merah putih": ["biru kuning", "hijau hitam", "hitam putih", "merah hijau"],
+                    "thomas edison": ["nikola tesla", "alexander graham bell", "benjamin franklin", "isaac newton"],
+                    "5": ["3", "4", "6", "10"],
+                    "17 agustus": ["1 juni", "28 oktober", "21 april", "10 november"],
+                    "biola": ["gitar", "piano", "drum", "seruling"],
+                    "pizza": ["pasta", "sushi", "taco", "hamburger"],
+                    "jepang": ["korea", "cina", "thailand", "vietnam"],
+                    "hitam": ["putih", "coklat", "abu-abu", "merah"],
+                    "arsitek": ["insinyur", "dokter", "guru", "polisi"],
+                    "albert einstein": ["stephen hawking", "marie curie", "galileo galilei", "isaac newton"],
+                    "11": ["9", "10", "12", "15"],
+                    "segitiga": ["persegi", "lingkaran", "persegi panjang", "belah ketupat"],
+                    "0": ["1", "-1", "10", "100"],
+                    "1914": ["1918", "1939", "1945", "1910"],
+                    "ada maksud tersembunyi": ["sangat tulus", "tidak ada apa-apa", "berbuat baik", "berhati mulia"],
+                    "saturnus": ["jupiter", "mars", "uranus", "neptunus"],
+                    "james cameron": ["steven spielberg", "christopher nolan", "quentin tarantino", "ridley scott"],
+                    "kulit": ["otak", "jantung", "hati", "paru-paru"],
+                    "http": ["ftp", "tcp", "ip", "dns"],
+                    "memphis": ["thebes", "luxor", "cairo", "alexandria"],
+                    "el nino": ["la nina", "angin muson", "badai", "tsunami"],
+                    "barometer": ["termometer", "higrometer", "anemometer", "kompas"],
+                    "seni daur ulang": ["seni lukis", "seni patung", "seni tari", "seni instalasi"],
+                    "udang": ["ikan", "kepiting", "cumi-cumi", "kerang"],
+                    "andrea hirata": ["tereliye", "pramoedya ananta toer", "chairil anwar", "ws rendra"],
+                    "melati putih": ["mawar merah", "anggrek bulan", "raflesia arnoldi", "bunga bangkai"],
+                    "yen": ["dollar", "euro", "pound", "rupiah"],
+                    "hippocampus": ["cerebellum", "amygdala", "korteks", "talamus"],
+                    "tari kecak": ["tari pendet", "tari legong", "tari saman", "tari jaipong"],
+                    "marie curie": ["rosalind franklin", "ada lovelace", "dorothy hodgkin", "jane goodall"],
+                    "india": ["cina", "mesir", "yunani", "romawi"],
+                    "swoosh": ["apple", "trefoil", "shell", "mercedes"],
+                    "detik": ["menit", "jam", "hari", "minggu"],
+                    "teori big bang": ["teori steady state", "teori multiverse", "teori string", "teori m-theory"],
+                    "perang salib": ["perang dunia", "perang dingin", "revolusi industri", "renaisans"],
+                    "atom": ["molekul", "elektron", "proton", "neutron"],
+                    "plato": ["socrates", "aristoteles", "pythagoras", "galileo"],
+                    "latin": ["yunani", "sansekerta", "hieroglif", "mesir kuno"],
+                    "el nino-southern oscillation (enso)": ["siklon tropis", "angin topan", "iklim mediterania", "zona subtropis"],
+                    "jantung": ["paru-paru", "hati", "ginjal", "lambung"],
+                    "che guevara": ["fidel castro", "ernesto cardenal", "simon bolivar", "jose marti"],
+                    "demokrasi": ["monarki", "oligarki", "tirani", "komunisme"],
+                    "gas rumah kaca": ["energi surya", "angin kencang", "gunung berapi", "gempa bumi"],
+                    "femur": ["tibia", "fibula", "humerus", "radius"],
+                    "gregorian": ["julian", "islam", "yahudi", "cina"],
+                    "deduktif": ["induktif", "abduktif", "retroduktif", "intuitif"],
+                    "homer": ["virgil", "dante", "shakespeare", "milton"],
+                    "kekristenan": ["islam", "hindu", "buddha", "yahudi"],
+                    "penjumlahan": ["pengurangan", "perkalian", "pembagian", "integral"],
+                    "athena": ["hera", "artemis", "aphrodite", "demeter"],
+                    "israel": ["palestina", "suriah", "lebanan", "yordania"],
+                    "dana moneter internasional (imf)": ["bank dunia", "pbb", "nato", "who"],
+                    "dirty room": ["dorm room", "room tidy", "my room", "orderly"],
+                    "teorema ketidaklengkapan gödel": ["teorema terakhir fermat", "teorema pythagoras", "hukum newton", "paradoks zeno"],
+                    "paradox of theseus": ["paradox kakek", "paradox monty hall", "paradox zeno", "paradox fitch"],
+                    "mitos ilmiah": ["fakta ilmiah", "hipotesis", "teori", "observasi"],
+                    "cipher": ["enkripsi", "dekripsi", "algoritma", "kode morse"],
+                    "superposisi": ["entanglement", "kuantisasi", "difraksi", "interferensi"],
+                    "e": ["pi", "phi", "gamma", "zeta"],
+                    "arjuna": ["bima", "yudistira", "nakula", "sadewa"],
+                    "eksperimen penjara stanford": ["eksperimen milgram", "eksperimen asch", "eksperimen pavlov", "eksperimen little albert"],
+                    "saudara sepupu": ["saudara kandung", "paman", "bibi", "keponakan"],
+                    "siklus kekal": ["akhir zaman", "awal mula", "kematian", "kehidupan"],
+                    "partikel subatomik": ["bintang", "galaksi", "planet", "black hole"],
+                    "paradox kakek": ["paradox ship of theseus", "paradox monty hall", "paradox zeno", "paradox fermi"],
+                    "atlantis": ["lemuria", "mu", "el dorado", "shambhala"],
+                    "untuk semua": ["ada", "tidak ada", "jika maka", "dan"],
+                    "lubang hitam": ["bintang neutron", "katai putih", "quasar", "pulsar"],
+                    "fisika seni": ["kimia seni", "biologi seni", "matematika seni", "sejarah seni"],
+                    "multiverse": ["singularitas", "big crunch", "big rip", "alam semesta paralel"],
+                    "8": ["7", "9", "10", "12"],
+                    "gottfried leibniz": ["isaac newton", "rené descartes", "blaise pascal", "leonhard euler"]
+                };
+
+                if (specificOptions[correctStr]) {
+                    shuffleArray(specificOptions[correctStr]).forEach(opt => {
+                        if (options.length < 4 && opt.toLowerCase() !== correctStr) {
+                            options.push(opt);
+                        }
+                    });
+                }
                 
-                if (correctStr === "lancip") similarOptions.add("tumpul");
-                if (correctStr === "tumpul") similarOptions.add("lancip");
-                if (correctStr === "benar") similarOptions.add("salah");
-                if (correctStr === "tidak") similarOptions.add("ya");
-                if (correctStr === "matematika") similarOptions.add("fisika");
-
-                // If correct answer is a specific name/term, add other names/terms from the question/context
-                if (correctStr === "ani") similarOptions.add("budi"); similarOptions.add("cici");
-                if (correctStr === "budi") similarOptions.add("ani"); similarOptions.add("cici");
-                if (correctStr === "cici") similarOptions.add("ani"); similarOptions.add("budi");
-
-
-                // Add these to options, ensuring uniqueness and not adding the correct answer itself
-                similarOptions.forEach(opt => {
-                    if (options.length < 4 && opt.toLowerCase() !== correctStr) {
-                        options.push(opt);
-                    }
-                });
-
-                // Fill remaining spots with random, somewhat plausible but incorrect terms
                 while(options.length < 4) {
                     let randomTerm;
-                    const randomType = randInt(1,3);
-                    if (randomType === 1 && category === 'arithmetic') randomTerm = "pecahan";
-                    else if (randomType === 2 && category === 'geometry') randomTerm = "lingkaran";
-                    else if (randomType === 3 && category === 'algebra') randomTerm = "variabel";
-                    else randomTerm = `Opsi ${options.length + 1}`; // Generic fallback
+                    const defaultTriviaTerms = ["sejarah", "geografi", "budaya", "ilmiah", "fakta", "penemuan", "seni", "teknologi", "logika", "matematika"];
+                    randomTerm = defaultTriviaTerms[randInt(0, defaultTriviaTerms.length - 1)];
 
                     if (!options.includes(randomTerm) && randomTerm.toLowerCase() !== correctStr) {
                         options.push(randomTerm);
